@@ -1,0 +1,270 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import PageCard from "../components/page-card";
+import CustomTextInput from "../components/custom-text-input";
+import CustomPhoneInput from "../components/custom-phone-input";
+import CustomDateInput from "../components/custom-date-input";
+import CustomMultiSelect from "../components/custom-multi-select";
+import CustomSelect from "../components/custom-select";
+
+import type { Department } from "../types/department";
+import type { Branch } from "../types/branch";
+import type { SystemRole } from "../types/system-role";
+import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
+
+const departmentOptions: Department[] = [
+  { value: "it", label: "IT" },
+  { value: "engineering", label: "Engineering" },
+  { value: "product", label: "Product" },
+  { value: "design", label: "Design" },
+  { value: "marketing", label: "Marketing" },
+  { value: "sales", label: "Sales" },
+  { value: "finance", label: "Finance" },
+  { value: "hr", label: "Human Resources" },
+  { value: "operations", label: "Operations" },
+  { value: "support", label: "Customer Support" },
+];
+
+const branchOptions: Branch[] = [
+  { value: "warsaw-hq", label: "Warsaw (HQ)", isHq: true },
+  { value: "krakow", label: "Kraków", isHq: false },
+  { value: "wroclaw", label: "Wrocław", isHq: false },
+  { value: "poznan", label: "Poznań", isHq: false },
+  { value: "gdansk", label: "Gdańsk", isHq: false },
+  { value: "lodz", label: "Łódź", isHq: false },
+  { value: "remote-pl", label: "Remote (Poland)", isHq: false },
+  { value: "remote-eu", label: "Remote (EU)", isHq: false },
+];
+
+const systemRoleOptions: SystemRole[] = [
+  { value: "admin", label: "Admin" },
+  { value: "employee", label: "Employee" },
+  { value: "hr-employee", label: "HR employee" },
+  { value: "project-manager", label: "Project Manager" },
+];
+
+type FieldKey =
+  | "firstName"
+  | "lastName"
+  | "email"
+  | "phoneNumber"
+  | "birthDate"
+  | "systemRole";
+
+export default function AddNewUser() {
+  const navigate = useNavigate();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+
+  const [phoneDial, setPhoneDial] = useState("+48");
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  const [birthDate, setBirthDate] = useState("");
+
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [systemRole, setSystemRole] = useState<SystemRole | null>(null);
+
+  const [error, setError] = useState("");
+  const [fieldError, setFieldError] = useState<FieldKey | null>(null);
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!firstName.trim()) {
+      setFieldError("firstName");
+      setError("First name is required");
+      return;
+    }
+    if (!lastName.trim()) {
+      setFieldError("lastName");
+      setError("Last name is required");
+      return;
+    }
+    if (!email.trim()) {
+      setFieldError("email");
+      setError("Email is required");
+      return;
+    }
+    if (!phoneNumber.trim()) {
+      setFieldError("phoneNumber");
+      setError("Phone number is required");
+      return;
+    }
+    if (!birthDate.trim()) {
+      setFieldError("birthDate");
+      setError("Birth date is required");
+      return;
+    }
+    if (!systemRole) {
+      setFieldError("systemRole");
+      setError("System role is required");
+      return;
+    }
+
+    setError("");
+    setFieldError(null);
+
+    // call API -> send code
+    // then navigate to verification page/step
+  };
+
+  return (
+    <PageCard>
+      <form
+        onSubmit={onSubmit}
+        className="flex flex-col w-full min-h-[calc(100vh-220px)] px-12"
+      >
+        <div className="flex flex-col items-center">
+          <h1 className="font-semibold text-2xl">Add new user</h1>
+
+          {error && (
+            <div className="w-full pt-6 mb-4">
+              <div className="w-full rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-3">
+                <ExclamationCircleIcon className="h-5 w-5 text-red-700 mt-0.5 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
+
+          <div className={fieldError === "firstName" ? "w-full" : "w-full"}>
+            <CustomTextInput
+              label="First name"
+              value={firstName}
+              onChange={(v) => {
+                setFirstName(v);
+                if (fieldError === "firstName") setFieldError(null);
+                if (error && fieldError === "firstName") setError("");
+              }}
+              placeholder="Charles"
+              isErr={fieldError === "firstName"}
+            />
+          </div>
+
+          <div className="w-full">
+            <CustomTextInput
+              label="Last name"
+              value={lastName}
+              onChange={(v) => {
+                setLastName(v);
+                if (fieldError === "lastName") setFieldError(null);
+                if (error && fieldError === "lastName") setError("");
+              }}
+              placeholder="Leclerc"
+              isErr={fieldError === "lastName"}
+            />
+          </div>
+
+          <div className="w-full">
+            <CustomTextInput
+              label="Email"
+              value={email}
+              onChange={(v) => {
+                setEmail(v);
+                if (fieldError === "email") setFieldError(null);
+                if (error && fieldError === "email") setError("");
+              }}
+              placeholder="charles.leclerc@ferrari.com"
+              isErr={fieldError === "email"}
+            />
+          </div>
+
+          <div className="w-full">
+            <CustomPhoneInput
+              label="Phone number"
+              countryCode={phoneDial}
+              onCountryCodeChange={(v) => {
+                setPhoneDial(v);
+                if (fieldError === "phoneNumber") setFieldError(null);
+                if (error && fieldError === "phoneNumber") setError("");
+              }}
+              value={phoneNumber}
+              onChange={(v) => {
+                setPhoneNumber(v);
+                if (fieldError === "phoneNumber") setFieldError(null);
+                if (error && fieldError === "phoneNumber") setError("");
+              }}
+              placeholder="123 456 789"
+              isErr={fieldError === "phoneNumber"}
+            />
+          </div>
+
+          <div className="w-full">
+            <CustomDateInput
+              label="Birth date"
+              value={birthDate}
+              onChange={(v) => {
+                setBirthDate(v);
+                if (fieldError === "birthDate") setFieldError(null);
+                if (error && fieldError === "birthDate") setError("");
+              }}
+              isErr={fieldError === "birthDate"}
+            />
+          </div>
+
+          <div className="w-full">
+            <CustomMultiSelect
+              label="Departments"
+              options={departmentOptions}
+              value={departments}
+              onChange={(v) => {
+                setDepartments(v);
+              }}
+              placeholder="Sales"
+            />
+          </div>
+
+          <div className="w-full">
+            <CustomMultiSelect
+              label="Branches"
+              options={branchOptions}
+              value={branches}
+              onChange={(v) => {
+                setBranches(v);
+              }}
+              placeholder="Wroclaw"
+            />
+          </div>
+
+          <div className="w-full">
+            <CustomSelect
+              label="System role"
+              options={systemRoleOptions}
+              value={systemRole}
+              onChange={(v) => {
+                setSystemRole(v);
+                if (fieldError === "systemRole") setFieldError(null);
+                if (error && fieldError === "systemRole") setError("");
+              }}
+              placeholder="Employee"
+              isErr={fieldError === "systemRole"}
+            />
+          </div>
+        </div>
+
+        <div className="mt-auto pt-5">
+          <div className="pt-4">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="w-full h-11 rounded-xl border-2 border-black bg-white text-black hover:bg-gray-50 active:scale-[0.99]"
+              >
+                Back
+              </button>
+
+              <button
+                type="submit"
+                className="w-full h-11 rounded-xl bg-black text-white hover:opacity-90 active:scale-[0.99]"
+              >
+                Send verification code
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </PageCard>
+  );
+}
