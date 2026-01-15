@@ -8,6 +8,8 @@ export default function Home() {
       <Link to="/add-user">Add user</Link>
       <Link to="/successful-activation">Successful activation</Link>
       <Link to="/failed-activation">Failed activation</Link>
+      <Link title="Add User" to="/add-user">Dodaj użytkownika</Link>
+      <Link title="Go to Projects" to="/projects">Lista projektów</Link>
     </PageCard>
   );
 }
