@@ -5,10 +5,10 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptors';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors(); // frontend (5342?) łączy się z backendem (2137)
+  app.enableCors(); // frontend łączy się z backendem
   app.useGlobalInterceptors(new LoggingInterceptor()); // interceptor dla każdego zapytania
 
-  await app.listen(5432);
-  console.log('Backend działa na http://localhost:2137');
+  await app.listen(process.env.PORT || 3000);
+  console.log(`Backend działa na http://localhost:${process.env.PORT || 3000}}`);
 }
 bootstrap();
