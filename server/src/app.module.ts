@@ -15,6 +15,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ProjectsModule } from './projects/projects.module';
 import { UsersModule } from './users/users.module';
 import { BelbinModule } from './belbin/belbin.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -29,9 +31,11 @@ import { BelbinModule } from './belbin/belbin.module';
       autoLoadEntities: true,
       synchronize: false,
     }),
-    ProjectsModule,
+    AddressesModule,
     UsersModule,
+    ProjectsModule,
     BelbinModule,
+    RolesModule,
   ],
 })
 export class AppModule {}

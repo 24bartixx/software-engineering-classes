@@ -13,7 +13,12 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const newUser = this.usersRepository.create(createUserDto);
+    const newUser = this.usersRepository.create({
+      ...createUserDto,
+      isactivated: false,
+      created_at: new Date(),
+      modified_at: new Date(),
+    });
     return await this.usersRepository.save(newUser);
   }
 
@@ -27,10 +32,12 @@ export class UsersService {
       throw new NotFoundException(`Użytkownik o ID ${id} nie istnieje`);
     return user;
   }
-
-  // Aktualizacja
+  
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    await this.usersRepository.update(id, updateUserDto);
+    await this.usersRepository.update(id, {
+      ...updateUserDto,
+      modified_at: new Date(),
+    });
     return this.findOne(id);
   }
 
