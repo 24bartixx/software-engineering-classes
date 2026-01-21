@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import PageCard from "../../components/page-card";
 import CustomSelect, { type Option } from "../../components/custom-select";
 import CustomTextInput from "../../components/custom-text-input";
@@ -105,140 +106,153 @@ export default function AddAddress() {
       apartment: apartment || undefined,
     };
 
-    navigate("/add-user", { state: { address: newAddress } });
+    sessionStorage.setItem("fromAddAddress", "true");
+    navigate("/add-user", {
+      state: { address: newAddress },
+    });
   };
 
   return (
-    <PageCard>
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col w-full min-h-[calc(100vh-220px)] px-12"
-      >
-        <div className="flex flex-col items-center">
-          <h1 className="font-semibold text-2xl">Add address</h1>
+    <motion.div
+      initial={{ x: "100%", opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: "100%", opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
+      <PageCard>
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col w-full min-h-[calc(100vh-220px)] px-12"
+        >
+          <div className="flex flex-col items-center">
+            <h1 className="font-semibold text-2xl">Add address</h1>
 
-          {error && (
-            <div className="w-full pt-6 mb-4">
-              <div className="w-full rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-3">
-                <ExclamationCircleIcon className="h-5 w-5 text-red-700 mt-0.5 flex-shrink-0" />
-                <span>{error}</span>
+            {error && (
+              <div className="w-full pt-6 mb-4">
+                <div className="w-full rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-3">
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-700 mt-0.5 flex-shrink-0" />
+                  <span>{error}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="w-full">
+              <CustomSelect
+                label="Country"
+                options={countryOptions}
+                value={country}
+                onChange={(v) => {
+                  setCountry(v);
+                  if (fieldError === "country") setFieldError(null);
+                  if (error && fieldError === "country") setError("");
+                }}
+                placeholder="Select country"
+                isErr={fieldError === "country"}
+              />
+            </div>
+
+            <div className="w-full">
+              <CustomTextInput
+                label="State (optional)"
+                value={state}
+                onChange={setState}
+                placeholder=""
+                isErr={false}
+              />
+            </div>
+
+            <div className="w-full">
+              <CustomTextInput
+                label="Postal code"
+                value={postalCode}
+                onChange={(v) => {
+                  setPostalCode(v);
+                  if (fieldError === "postalCode") setFieldError(null);
+                  if (error && fieldError === "postalCode") setError("");
+                }}
+                placeholder=""
+                isErr={fieldError === "postalCode"}
+              />
+            </div>
+
+            <div className="w-full">
+              <CustomTextInput
+                label="City"
+                value={city}
+                onChange={(v) => {
+                  setCity(v);
+                  if (fieldError === "city") setFieldError(null);
+                  if (error && fieldError === "city") setError("");
+                }}
+                placeholder=""
+                isErr={fieldError === "city"}
+              />
+            </div>
+
+            <div className="w-full">
+              <CustomTextInput
+                label="Street"
+                value={street}
+                onChange={(v) => {
+                  setStreet(v);
+                  if (fieldError === "street") setFieldError(null);
+                  if (error && fieldError === "street") setError("");
+                }}
+                placeholder=""
+                isErr={fieldError === "street"}
+              />
+            </div>
+
+            <div className="w-full">
+              <CustomTextInput
+                label="House number"
+                value={houseNumber}
+                onChange={(v) => {
+                  setHouseNumber(v);
+                  if (fieldError === "houseNumber") setFieldError(null);
+                  if (error && fieldError === "houseNumber") setError("");
+                }}
+                placeholder=""
+                isErr={fieldError === "houseNumber"}
+              />
+            </div>
+
+            <div className="w-full">
+              <CustomTextInput
+                label="Apartment (optional)"
+                value={apartment}
+                onChange={setApartment}
+                placeholder=""
+                isErr={false}
+              />
+            </div>
+          </div>
+
+          <div className="mt-auto pt-5">
+            <div className="pt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  className="w-full h-11 rounded-xl border-2 border-black bg-white text-black hover:bg-gray-50 active:scale-[0.99]"
+                  onClick={() => {
+                    sessionStorage.setItem("fromAddAddress", "true");
+                    navigate(-1);
+                  }}
+                >
+                  Back
+                </button>
+
+                <button
+                  type="submit"
+                  className="w-full h-11 rounded-xl bg-black text-white hover:opacity-90 active:scale-[0.99]"
+                >
+                  Add
+                </button>
               </div>
             </div>
-          )}
-
-          <div className="w-full">
-            <CustomSelect
-              label="Country"
-              options={countryOptions}
-              value={country}
-              onChange={(v) => {
-                setCountry(v);
-                if (fieldError === "country") setFieldError(null);
-                if (error && fieldError === "country") setError("");
-              }}
-              placeholder="Select country"
-              isErr={fieldError === "country"}
-            />
           </div>
-
-          <div className="w-full">
-            <CustomTextInput
-              label="State (optional)"
-              value={state}
-              onChange={setState}
-              placeholder=""
-              isErr={false}
-            />
-          </div>
-
-          <div className="w-full">
-            <CustomTextInput
-              label="Postal code"
-              value={postalCode}
-              onChange={(v) => {
-                setPostalCode(v);
-                if (fieldError === "postalCode") setFieldError(null);
-                if (error && fieldError === "postalCode") setError("");
-              }}
-              placeholder=""
-              isErr={fieldError === "postalCode"}
-            />
-          </div>
-
-          <div className="w-full">
-            <CustomTextInput
-              label="City"
-              value={city}
-              onChange={(v) => {
-                setCity(v);
-                if (fieldError === "city") setFieldError(null);
-                if (error && fieldError === "city") setError("");
-              }}
-              placeholder=""
-              isErr={fieldError === "city"}
-            />
-          </div>
-
-          <div className="w-full">
-            <CustomTextInput
-              label="Street"
-              value={street}
-              onChange={(v) => {
-                setStreet(v);
-                if (fieldError === "street") setFieldError(null);
-                if (error && fieldError === "street") setError("");
-              }}
-              placeholder=""
-              isErr={fieldError === "street"}
-            />
-          </div>
-
-          <div className="w-full">
-            <CustomTextInput
-              label="House number"
-              value={houseNumber}
-              onChange={(v) => {
-                setHouseNumber(v);
-                if (fieldError === "houseNumber") setFieldError(null);
-                if (error && fieldError === "houseNumber") setError("");
-              }}
-              placeholder=""
-              isErr={fieldError === "houseNumber"}
-            />
-          </div>
-
-          <div className="w-full">
-            <CustomTextInput
-              label="Apartment (optional)"
-              value={apartment}
-              onChange={setApartment}
-              placeholder=""
-              isErr={false}
-            />
-          </div>
-        </div>
-
-        <div className="mt-auto pt-5">
-          <div className="pt-4">
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="w-full h-11 rounded-xl border-2 border-black bg-white text-black hover:bg-gray-50 active:scale-[0.99]"
-              >
-                Back
-              </button>
-
-              <button
-                type="submit"
-                className="w-full h-11 rounded-xl bg-black text-white hover:opacity-90 active:scale-[0.99]"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
-      </form>
-    </PageCard>
+        </form>
+      </PageCard>
+    </motion.div>
   );
 }

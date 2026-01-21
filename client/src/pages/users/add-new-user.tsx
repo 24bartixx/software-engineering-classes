@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import PageCard from "../../components/page-card";
 import CustomTextInput from "../../components/custom-text-input";
 import CustomPhoneInput from "../../components/custom-phone-input";
@@ -95,10 +96,18 @@ export default function AddNewUser() {
   const [fieldError, setFieldError] = useState<FieldKey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+
   useEffect(() => {
+    console.log("location.state:", location.state);
     if (location.state?.address) {
       setAddress(location.state.address);
-      window.history.replaceState({}, document.title);
+    }
+    console.log(sessionStorage.getItem("fromAddAddress"));
+    const fromAddAddress = sessionStorage.getItem("fromAddAddress") === "true";
+    if (fromAddAddress) {
+      setShouldAnimate(true);
+      sessionStorage.removeItem("fromAddAddress");
     }
   }, [location]);
 
@@ -180,7 +189,7 @@ export default function AddNewUser() {
     return parts.join(", ");
   };
 
-  return (
+  const content = (
     <PageCard>
       <form
         onSubmit={onSubmit}
@@ -384,5 +393,20 @@ export default function AddNewUser() {
         </div>
       </form>
     </PageCard>
+  );
+
+  console.log(shouldAnimate);
+
+  return shouldAnimate ? (
+    <motion.div
+      initial={{ x: "-30%", opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: "-30%", opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
+      {content}
+    </motion.div>
+  ) : (
+    content
   );
 }
