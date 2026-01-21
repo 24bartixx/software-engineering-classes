@@ -20,15 +20,6 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
-  @Post('send-activation-email')
-  async sendActivationEmail() {
-    const email = 'jestgitbartix@gmail.com';
-    const activationLink = 'http://localhost:3000/activate?token=randomToken';
-
-    await this.emailService.sendActivationEmail(email, activationLink);
-    return { message: 'Activation email sent!' };
-  }
-
   @Post('create-account')
   async createAccount(@Body() createUserDto: CreateUserAuthDto) {
     const email = createUserDto.email;
