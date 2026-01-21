@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import PageCard from "../../components/page-card";
 import CustomTextInput from "../../components/custom-text-input";
 import CustomPhoneInput from "../../components/custom-phone-input";
@@ -13,6 +13,17 @@ import type { SystemRole } from "../../types/system-role";
 import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import type { Gender } from "../../types/gender";
 import { createAccount } from "../../services/api/users-api";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/outline";
+
+export type Address = {
+  country: string;
+  state?: string;
+  postalCode: string;
+  city: string;
+  street: string;
+  houseNumber: string;
+  apartment?: string;
+};
 
 const departmentOptions: Department[] = [
   { value: "it", label: "IT" },
@@ -62,6 +73,7 @@ type FieldKey =
 
 export default function AddNewUser() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -73,6 +85,8 @@ export default function AddNewUser() {
 
   const [birthDate, setBirthDate] = useState("");
 
+  const [address, setAddress] = useState<Address | null>(null);
+
   const [departments, setDepartments] = useState<Department[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [systemRole, setSystemRole] = useState<SystemRole | null>(null);
@@ -80,6 +94,13 @@ export default function AddNewUser() {
   const [error, setError] = useState("");
   const [fieldError, setFieldError] = useState<FieldKey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.address) {
+      setAddress(location.state.address);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,6 +168,16 @@ export default function AddNewUser() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const formatAddress = (addr: Address) => {
+    const parts = [
+      addr.country,
+      addr.postalCode,
+      addr.city,
+      `ul. ${addr.street} ${addr.houseNumber}`,
+    ];
+    return parts.join(", ");
   };
 
   return (
@@ -255,6 +286,39 @@ export default function AddNewUser() {
               }}
               isErr={fieldError === "birthDate"}
             />
+          </div>
+
+          <div className="w-full py-3">
+            <div className="flex items-center justify-between gap-10 text-lg">
+              <label className="font-normal text-black">
+                Residential address
+              </label>
+
+              <div className="flex items-center gap-3 w-[28rem]">
+                <div className="h-14 flex-1 rounded-2xl border border-black bg-white px-6 flex items-center text-base">
+                  {address ? (
+                    <span className="truncate text-black">
+                      {formatAddress(address)}
+                    </span>
+                  ) : (
+                    <span className="text-black/50">brak</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate("/users/add-address", { state: { address } })
+                  }
+                  className="h-14 w-14 rounded-2xl border-1 border-black bg-white hover:bg-gray-50 active:scale-[0.99] flex items-center justify-center flex-shrink-0"
+                >
+                  {address ? (
+                    <PencilIcon className="h-6 w-6 text-black" />
+                  ) : (
+                    <PlusIcon className="h-6 w-6 text-black" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="w-full">
