@@ -12,10 +12,23 @@ export interface CreateAccountDto {
   address_id?: number;
 }
 
+export interface VerifyAccountDto {
+  password: string;
+  repeat_password: string;
+}
+
 export const createAccount = async (data: CreateAccountDto) => {
   console.log(`${API_BASE_URL}/auth/create-account`);
   const response = await axios.post(
     `${API_BASE_URL}/auth/create-account`,
+    data,
+  );
+  return response.data;
+};
+
+export const verifyAccount = async (token: string, data: VerifyAccountDto) => {
+  const response = await axios.post(
+    `${API_BASE_URL}/auth/verify-account?token=${token}`,
     data,
   );
   return response.data;

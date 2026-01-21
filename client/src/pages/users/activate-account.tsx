@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import PageCard from "../../components/page-card";
 import CustomPassInput from "../../components/custom-pass-input";
 import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import { verifyAccount } from "../../services/api/users-api";
 
 type FieldKey = "password" | "confirmPassword";
 
@@ -26,9 +27,12 @@ export default function ActivateAccount() {
       return;
     }
 
-    if (password.length < 8) {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.{7,})/;
+    if (!passwordRegex.test(password)) {
       setFieldError("password");
-      setError("Password must be at least 8 characters long");
+      setError(
+        "Password must be at least 7 characters with one uppercase letter, one lowercase letter, and one digit",
+      );
       return;
     }
 
@@ -50,10 +54,18 @@ export default function ActivateAccount() {
 
     try {
       const token = searchParams.get("token");
-      // TODO: Call API to activate account with token and password
-      // const response = await activateAccount({ token, password });
-      // navigate("/successful-activation");
-      console.log("Activation with token:", token, "and password:", password);
+      if (!token) {
+        setError("Invalid or missing activation token");
+        setIsSubmitting(false);
+        return;
+      }
+
+      await verifyAccount(token, {
+        password,
+        repeat_password: confirmPassword,
+      });
+
+      navigate("/successful-activation");
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
