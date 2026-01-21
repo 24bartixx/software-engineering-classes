@@ -37,6 +37,9 @@ export class User {
   @Column()
   isactivated: boolean;
 
+  @Column({ nullable: true })
+  verification_token?: string;
+
   @Column()
   created_at: Date;
 

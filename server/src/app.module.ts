@@ -6,8 +6,7 @@ import { UsersModule } from './users/users.module';
 import { BelbinModule } from './belbin/belbin.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { RolesModule } from './roles/roles.module';
-import { AuthController } from './auth/auth.controller';
-import { EmailService } from './email/email.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,13 +21,14 @@ import { EmailService } from './email/email.service';
       autoLoadEntities: true,
       synchronize: false,
     }),
+    AuthModule,
     AddressesModule,
     UsersModule,
     ProjectsModule,
     BelbinModule,
     RolesModule,
   ],
-  controllers: [AuthController],
-  providers: [EmailService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

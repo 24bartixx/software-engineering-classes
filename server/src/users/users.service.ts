@@ -19,6 +19,7 @@ export class UsersService {
       created_at: new Date(),
       modified_at: new Date(),
     });
+
     return await this.usersRepository.save(newUser);
   }
 
@@ -32,7 +33,7 @@ export class UsersService {
       throw new NotFoundException(`Użytkownik o ID ${id} nie istnieje`);
     return user;
   }
-  
+
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     await this.usersRepository.update(id, {
       ...updateUserDto,
