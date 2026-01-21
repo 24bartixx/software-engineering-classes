@@ -1,4 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpException,
+  HttpStatus,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { EmailService } from 'src/auth/email.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthService } from './auth.service';
@@ -22,7 +29,6 @@ export class AuthController {
 
   @Post('create-account')
   async createAccount(@Body() createUserDto: CreateUserDto) {
-
     const email = createUserDto.email;
     const token = jwt.sign({ email: email }, 'your-secret-key', {
       expiresIn: '10m',
@@ -30,13 +36,37 @@ export class AuthController {
 
     this.authService.createAccount(createUserDto, token);
 
-    const activationLink = `http://localhost:3000/activate?token=${token}`;
+    await this.emailService.sendActivationEmail(
+      email,
+      `http://localhost:3000/verify-account?token=${token}`,
+    );
 
-    await this.emailService.sendActivationEmail(email, activationLink);
+    console.log('Token:', token);
 
     return { message: 'User created and activation email sent!' };
   }
 
   @Post('verify-account')
-  async verifyAccount() {}
+  async verifyAccount(@Query('token') token: string) {
+    try {
+      const decoded = jwt.verify(token, 'your-secret-key') as { email: string };
+      await this.authService.verifyAccount(decoded.email);
+      return { message: `Account ${decoded.email} has been activated!` };
+    } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        console.error('Token verification failed:', error);
+        throw new HttpException(
+          'Invalid or expired token!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      console.error('Something went wrong:', error);
+
+      throw new HttpException(
+        'Something went wrong!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

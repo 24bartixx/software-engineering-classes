@@ -37,8 +37,8 @@ export class User {
   @Column()
   isactivated: boolean;
 
-  @Column({ nullable: true })
-  verification_token?: string;
+  @Column({ type: 'varchar', nullable: true })
+  verification_token?: string | null;
 
   @Column()
   created_at: Date;

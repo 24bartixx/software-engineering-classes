@@ -24,4 +24,20 @@ export class AuthService {
     });
     return await this.usersRepository.save(newUser);
   }
+
+  async verifyAccount(email: string): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    user.isactivated = true;
+    user.verification_token = null;
+    user.modified_at = new Date();
+
+    await this.usersRepository.save(user);
+  }
 }
