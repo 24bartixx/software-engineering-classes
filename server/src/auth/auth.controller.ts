@@ -10,6 +10,7 @@ import { EmailService } from 'src/auth/email.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import * as jwt from 'jsonwebtoken';
+import { CreateUserAuthDto } from './dtos/create-user-auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -28,7 +29,7 @@ export class AuthController {
   }
 
   @Post('create-account')
-  async createAccount(@Body() createUserDto: CreateUserDto) {
+  async createAccount(@Body() createUserDto: CreateUserAuthDto) {
     const email = createUserDto.email;
     const token = jwt.sign({ email: email }, 'your-secret-key', {
       expiresIn: '10m',
@@ -38,7 +39,7 @@ export class AuthController {
 
     await this.emailService.sendActivationEmail(
       email,
-      `http://localhost:3000/verify-account?token=${token}`,
+      `http://localhost:3000/auth/verify-account?token=${token}`,
     );
 
     console.log('Token:', token);
