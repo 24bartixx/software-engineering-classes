@@ -1,14 +1,3 @@
-// import { Module } from '@nestjs/common';
-// import { AppController } from './app.controller';
-// import { AppService } from './app.service';
-
-// @Module({
-//   imports: [],
-//   controllers: [AppController],
-//   providers: [AppService],
-// })
-// export class AppModule {}
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -17,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { BelbinModule } from './belbin/belbin.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { RolesModule } from './roles/roles.module';
+import { AuthController } from './auth/auth.controller';
+import { EmailService } from './email/email.service';
 
 @Module({
   imports: [
@@ -37,5 +28,7 @@ import { RolesModule } from './roles/roles.module';
     BelbinModule,
     RolesModule,
   ],
+  controllers: [AuthController],
+  providers: [EmailService],
 })
 export class AppModule {}
