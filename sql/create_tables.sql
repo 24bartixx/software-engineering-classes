@@ -62,7 +62,7 @@ CREATE TABLE "user" (
     verification_token TEXT,
     created_at TIMESTAMPTZ NOT NULL ,
     modified_at TIMESTAMPTZ NOT NULL,
-    address_id INTEGER NOT NULL REFERENCES address(address_id)
+    address_id INTEGER REFERENCES address(address_id)
 );
 
 CREATE TABLE employee (
