@@ -22,6 +22,7 @@ export class AuthService {
       verification_token: verificationToken,
       created_at: new Date(),
       modified_at: new Date(),
+      address_id: createUserDto.address_id ?? null,
     });
     return await this.usersRepository.save(newUser);
   }

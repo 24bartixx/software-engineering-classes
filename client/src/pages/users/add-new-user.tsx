@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PageCard from "../components/page-card";
-import CustomTextInput from "../components/custom-text-input";
-import CustomPhoneInput from "../components/custom-phone-input";
-import CustomDateInput from "../components/custom-date-input";
-import CustomMultiSelect from "../components/custom-multi-select";
-import CustomSelect from "../components/custom-select";
+import PageCard from "../../components/page-card";
+import CustomTextInput from "../../components/custom-text-input";
+import CustomPhoneInput from "../../components/custom-phone-input";
+import CustomDateInput from "../../components/custom-date-input";
+import CustomMultiSelect from "../../components/custom-multi-select";
+import CustomSelect from "../../components/custom-select";
 
-import type { Department } from "../types/department";
-import type { Branch } from "../types/branch";
-import type { SystemRole } from "../types/system-role";
+import type { Department } from "../../types/department";
+import type { Branch } from "../../types/branch";
+import type { SystemRole } from "../../types/system-role";
 import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import type { Gender } from "../../types/gender";
+import { createAccount } from "../../services/api/users-api";
 
 const departmentOptions: Department[] = [
   { value: "it", label: "IT" },
@@ -43,10 +45,17 @@ const systemRoleOptions: SystemRole[] = [
   { value: "project-manager", label: "Project Manager" },
 ];
 
+const genderOptions: Gender[] = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "other", label: "Other" },
+];
+
 type FieldKey =
   | "firstName"
   | "lastName"
   | "email"
+  | "gender"
   | "phoneNumber"
   | "birthDate"
   | "systemRole";
@@ -57,6 +66,7 @@ export default function AddNewUser() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [gender, setGender] = useState<Gender | null>(null);
 
   const [phoneDial, setPhoneDial] = useState("+48");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -69,8 +79,9 @@ export default function AddNewUser() {
 
   const [error, setError] = useState("");
   const [fieldError, setFieldError] = useState<FieldKey | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!firstName.trim()) {
@@ -86,6 +97,11 @@ export default function AddNewUser() {
     if (!email.trim()) {
       setFieldError("email");
       setError("Email is required");
+      return;
+    }
+    if (!gender) {
+      setFieldError("gender");
+      setError("Gender is required");
       return;
     }
     if (!phoneNumber.trim()) {
@@ -106,9 +122,31 @@ export default function AddNewUser() {
 
     setError("");
     setFieldError(null);
+    setIsSubmitting(true);
 
-    // call API -> send code
-    // then navigate to verification page/step
+    try {
+      const genderValue = gender.label as "Male" | "Female" | "Other";
+
+      let response = await createAccount({
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        gender: genderValue,
+        phone_number: `${phoneDial}${phoneNumber}`,
+        birthday_date: birthDate,
+      });
+
+      console.log("Account creation response:", response);
+
+      // navigate("/");
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to create account. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -168,6 +206,21 @@ export default function AddNewUser() {
               }}
               placeholder="charles.leclerc@ferrari.com"
               isErr={fieldError === "email"}
+            />
+          </div>
+
+          <div className="w-full">
+            <CustomSelect
+              label="Gender"
+              options={genderOptions}
+              value={gender}
+              onChange={(v) => {
+                setGender(v);
+                if (fieldError === "gender") setFieldError(null);
+                if (error && fieldError === "gender") setError("");
+              }}
+              placeholder="Select gender"
+              isErr={fieldError === "gender"}
             />
           </div>
 
@@ -257,9 +310,10 @@ export default function AddNewUser() {
 
               <button
                 type="submit"
-                className="w-full h-11 rounded-xl bg-black text-white hover:opacity-90 active:scale-[0.99]"
+                disabled={isSubmitting}
+                className="w-full h-11 rounded-xl bg-black text-white hover:opacity-90 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send verification code
+                {isSubmitting ? "Sending..." : "Send verification code"}
               </button>
             </div>
           </div>

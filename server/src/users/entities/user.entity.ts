@@ -47,9 +47,9 @@ export class User {
   modified_at: Date;
 
   @Column({ nullable: true })
-  address_id?: number;
+  address_id?: number | null;
 
   @ManyToOne(() => Address, { nullable: true })
   @JoinColumn({ name: 'address_id' })
-  address?: Address;
+  address?: Address | null;
 }

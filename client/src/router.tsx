@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "./layouts/root-layout";
-import AddNewUser from "./pages/add-new-user";
+import AddNewUser from "./pages/users/add-new-user";
 import Home from "./pages/home";
+import ActivateAccount from "./pages/users/activate-account";
 import SuccessfulActivation from "./pages/successful-activation";
 import FailedActivation from "./pages/failed-activation";
 import Projects from "./pages/projects";
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "add-user", element: <AddNewUser /> },
+      { path: "activate-account", element: <ActivateAccount /> },
       { path: "successful-activation", element: <SuccessfulActivation /> },
       { path: "failed-activation", element: <FailedActivation /> },
       { path: "projects", element: <Projects /> },
