@@ -59,7 +59,7 @@ CREATE TABLE "user" (
     phone_number TEXT NOT NULL,
     birthday_date DATE NOT NULL,
     isActivated BOOLEAN NOT NULL,
-    verification_token TEXT NOT NULL,
+    verification_token TEXT,
     created_at TIMESTAMPTZ NOT NULL ,
     modified_at TIMESTAMPTZ NOT NULL,
     address_id INTEGER NOT NULL REFERENCES address(address_id)
