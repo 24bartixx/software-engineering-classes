@@ -33,7 +33,7 @@ export class AuthController {
   async createAccount(@Body() createUserDto: CreateUserAuthDto) {
     const email = createUserDto.email;
     const token = jwt.sign({ email: email }, 'your-secret-key', {
-      expiresIn: '10m',
+      expiresIn: '3m',
     });
 
     this.authService.createAccount(createUserDto, token);
@@ -44,7 +44,6 @@ export class AuthController {
       `${clientUrl}activate-account?token=${token}`,
     );
 
-    console.log('URL sent:', `${clientUrl}activate-account?token=${token}`);
     console.log('Token:', token);
 
     return { message: 'User created and activation email sent!' };

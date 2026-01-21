@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PageCard from "../../components/page-card";
 import CustomPassInput from "../../components/custom-pass-input";
@@ -67,10 +67,8 @@ export default function ActivateAccount() {
 
       navigate("/successful-activation");
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to activate account. Please try again.",
-      );
+      console.error("Activation error:", err);
+      navigate("/failed-activation");
     } finally {
       setIsSubmitting(false);
     }
