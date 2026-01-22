@@ -4,7 +4,7 @@ import {LessThan, Repository} from "typeorm";
 import {InjectRepository} from "@nestjs/typeorm";
 import {addDays, isBefore, subDays} from 'date-fns';
 import {ExpiredBelbinTestDto} from "./dto/expired-belbin-test.dto";
-import {BelbinCategoryResult, EmployeeBelbinResultDto} from "./dto/employee-belbin-result.dto";
+import {EmployeeBelbinResultDto} from "./dto/employee-belbin-result.dto";
 import {SystemConfigService} from "src/system-config/system-config.service";
 import {BelbinTest} from "./entities/belbin-test.entity";
 import {SystemConfigKeysEnum} from "src/common/enum/system-config-keys.enum";
@@ -13,6 +13,7 @@ import {BelbinTestStatus, EmployeeTestStatusDto} from "./dto/employee-test-statu
 import {Employee} from "src/employee/entities/employee.entity";
 import { EmailService } from "src/common/email.service";
 import {BelbinTestAnswersDto} from "./dto/belbin-test-answers.dto";
+import { BelbinConverter } from "./belbin.converter";
 
 @Injectable()
 export class BelbinService {
@@ -28,7 +29,9 @@ export class BelbinService {
         @Inject()
         private systemConfigService: SystemConfigService,
         @Inject()
-        private emailService: EmailService
+        private emailService: EmailService,
+        @Inject()
+        private belbinConverter: BelbinConverter
     ) {}
 
     async getBelbinQuestions(): Promise<BelbinQuestion[]> {
@@ -38,25 +41,11 @@ export class BelbinService {
     async getExpiredBelbinTests(): Promise<ExpiredBelbinTestDto[]> {
         const testValidityDays = await this.getTestValidityDays();
         const lastValidDate = subDays(new Date(), testValidityDays);
-
         const expiredTests = await this.belbinTestRepository.find({
             where: { performedAt: LessThan(lastValidDate) },
             relations: ['employee', 'employee.user', 'employee.departmentsHistory', 'employee.departmentsHistory.department'],
         })
-
-        return expiredTests.map(test => {
-            const currentDepartments = test.employee.departmentsHistory
-                .filter(dh => dh.stoppedAt === null)
-                .map(dh => dh.department.name);
-
-            return {
-                employeeId: test.employee.id,
-                firstName: test.employee.user.first_name,
-                lastName: test.employee.user.last_name,
-                departments: currentDepartments,
-                testExpirationDate: addDays(test.performedAt, testValidityDays),
-            };
-        });
+        return expiredTests.map(test => this.belbinConverter.mapToExpiredDto(test, testValidityDays));
     }
 
     async getEmployeeTestResults(employeeId: number): Promise<EmployeeBelbinResultDto> {
@@ -67,50 +56,21 @@ export class BelbinService {
         if (!belbinTest) {
             throw new NotFoundException(`Nie znaleziono wyników testu Belbina dla pracownika o ID ${employeeId}`);
         }
-
         const belbinRolesMetadata = await this.belbinRolesMetadataRepository.find();
-        const testResults: BelbinCategoryResult[] = belbinRolesMetadata.map(roleMetadata => {
-            return {
-                id: roleMetadata.id,
-                name: roleMetadata.name,
-                score: belbinTest[roleMetadata.property] || 0,
-                description: roleMetadata.description,
-            };
-        });
-
-        return {
-            employeeId: belbinTest.employee.id,
-            employeeFirstName: belbinTest.employee.user.first_name,
-            employeeLastName: belbinTest.employee.user.last_name,
-            testDate: belbinTest.performedAt,
-            results: testResults,
-        };
+        return this.belbinConverter.mapToBelbinResultDto(belbinTest, belbinRolesMetadata);
     }
 
     async getEmployeeTestInfo(): Promise<EmployeeTestStatusDto[]> {
         const testValidityDays = await this.getTestValidityDays();
-        const now = new Date();
         const employees = await this.employeeRepository.find({
             relations: ['user', 'belbinTest'],
         });
-
         return employees.map(employee => {
-            let lastTestDate: Date | null = null;
-            let testStatus: BelbinTestStatus = BelbinTestStatus.NOT_STARTED;
-            if (employee.belbinTest) {
-                lastTestDate = employee.belbinTest.performedAt;
-                const testExpirationDate = addDays(lastTestDate, testValidityDays);
-                if (isBefore(testExpirationDate, now)) {
-                    testStatus = BelbinTestStatus.EXPIRED;
-                } else {
-                    testStatus = BelbinTestStatus.COMPLETED;
-                }
-            }
-
+            const { status, lastTestDate } = this.calculateTestStatus(employee.belbinTest, testValidityDays);
             return {
                 id: employee.id,
                 name: `${employee.user.first_name} ${employee.user.last_name}`,
-                status: testStatus,
+                status: status,
                 lastTestDate: lastTestDate,
             };
         });
@@ -126,51 +86,28 @@ export class BelbinService {
         }
 
         const testValidityDays = await this.getTestValidityDays();
-        const now = new Date();
-        let testStatus: BelbinTestStatus = BelbinTestStatus.NOT_STARTED;
-        let testExpirationDate: Date = new Date();
-        if (employee.belbinTest) {
-            testExpirationDate = addDays(employee.belbinTest.performedAt, testValidityDays);
-            if (isBefore(testExpirationDate, now)) {
-                testStatus = BelbinTestStatus.EXPIRED;
-            } else {
-                testStatus = BelbinTestStatus.COMPLETED;
-            }
-        }
-
-        if (testStatus != BelbinTestStatus.EXPIRED) {
+        const { status, expirationDate } = this.calculateTestStatus(employee.belbinTest, testValidityDays);
+        if (status !== BelbinTestStatus.EXPIRED || !expirationDate) {
             throw new BadRequestException(`Test pracownika o ID ${employeeId} nie jest przeterminowany`);
         }
 
-        await this.emailService.sendExpiredTestNotification(employee.user.email, testExpirationDate.toLocaleDateString())
+        await this.emailService.sendExpiredTestNotification(employee.user.email, expirationDate.toLocaleDateString())
         return { message: 'The notification about expired belbin test sent!' };
     }
 
     async saveTestResults(testAnswersDto: BelbinTestAnswersDto) {
         const employee = await this.employeeRepository.findOne({ where: { id: testAnswersDto.id } });
-        if (!employee) throw new NotFoundException(`Pracownik o ID ${testAnswersDto.id} nie istnieje`);
+        if (!employee) {
+            throw new NotFoundException(`Pracownik o ID ${testAnswersDto.id} nie istnieje`);
+        }
 
         const allQuestions = await this.belbinQuestionRepository.find();
-        const questionToRoleFieldMap = new Map<string, keyof BelbinTest>;
-        allQuestions.forEach(section => {
-            section.statements.forEach(statement => {
-                questionToRoleFieldMap.set(statement.id, statement.relatedRoleFieldName as keyof BelbinTest);
-            });
-        });
+        const questionToRoleFieldMap = this.createQuestionToFieldMap(allQuestions);
 
         const newBelbinTest = new BelbinTest();
         newBelbinTest.employee = employee;
         newBelbinTest.performedAt = new Date();
-
-        for (const [questionId, points] of Object.entries(testAnswersDto.answers)) {
-            const targetScoreFieldName = questionToRoleFieldMap.get(questionId);
-            if (targetScoreFieldName) {
-                const roleCurrentScore = (newBelbinTest as any)[targetScoreFieldName] || 0;
-                newBelbinTest[targetScoreFieldName] = roleCurrentScore + points;
-            } else {
-                console.warn(`Nieznane ID pytania: ${questionId}`);
-            }
-        }
+        this.calculateScores(newBelbinTest, testAnswersDto.answers, questionToRoleFieldMap);
 
         const existingTest = await this.belbinTestRepository.findOne({
             where: { employee: { id: employee.id } }
@@ -178,13 +115,50 @@ export class BelbinService {
         if (existingTest) {
             await this.belbinTestRepository.remove(existingTest);
         }
-
         return await this.belbinTestRepository.save(newBelbinTest);
     }
 
-    private async getTestValidityDays() {
+    private async getTestValidityDays(): Promise<number> {
         const testValidityDaysString = await this.systemConfigService
             .getOrThrow(SystemConfigKeysEnum.BELBIN_TEST_VALIDITY_DAYS);
         return parseInt(testValidityDaysString, 10);
+    }
+
+    private calculateTestStatus(test: BelbinTest | null, validityDays: number): { status: BelbinTestStatus, lastTestDate: Date | null, expirationDate: Date | null } {
+        if (!test) {
+            return { status: BelbinTestStatus.NOT_STARTED, lastTestDate: null, expirationDate: null };
+        }
+
+        const lastTestDate = test.performedAt;
+        const expirationDate = addDays(lastTestDate, validityDays);
+        const now = new Date();
+
+        const status = isBefore(expirationDate, now)
+            ? BelbinTestStatus.EXPIRED
+            : BelbinTestStatus.COMPLETED;
+
+        return { status, lastTestDate, expirationDate };
+    }
+
+    private createQuestionToFieldMap(questions: BelbinQuestion[]): Map<string, keyof BelbinTest> {
+        const map = new Map<string, keyof BelbinTest>();
+        questions.forEach(section => {
+            section.statements.forEach(statement => {
+                map.set(statement.id, statement.relatedRoleFieldName as keyof BelbinTest);
+            });
+        });
+        return map;
+    }
+
+    private calculateScores(test: BelbinTest, answers: Record<string, number>, fieldMap: Map<string, keyof BelbinTest>) {
+        for (const [questionId, points] of Object.entries(answers)) {
+            const targetScoreFieldName = fieldMap.get(questionId);
+            if (targetScoreFieldName) {
+                const currentScore = (test as any)[targetScoreFieldName] || 0;
+                test[targetScoreFieldName] = currentScore + points;
+            } else {
+                console.warn(`Otrzymano nieznane ID pytania: ${questionId}`);
+            }
+        }
     }
 }

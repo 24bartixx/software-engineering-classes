@@ -14,6 +14,7 @@ import { Address } from 'src/addresses/entities/address.entity';
 import { BelbinRolesMetadata } from './entities/belbin-roles-metadata.entity';
 
 import { EmailService } from 'src/common/email.service';
+import { BelbinConverter } from "./belbin.converter";
 
 @Module({
   imports: [
@@ -29,6 +30,6 @@ import { EmailService } from 'src/common/email.service';
     ]),
   ],
   controllers: [BelbinController],
-  providers: [BelbinService, BelbinQuestionSeeder, BelbinSeeder, EmailService],
+  providers: [BelbinService, BelbinQuestionSeeder, BelbinSeeder, EmailService, BelbinConverter],
 })
 export class BelbinModule {}
