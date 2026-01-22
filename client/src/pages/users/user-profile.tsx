@@ -132,11 +132,7 @@ export default function UserProfile() {
           <div className="mt-6">
             <ProfileDataField
               label="System roles"
-              value={
-                user.systemRoles.length > 0
-                  ? user.systemRoles
-                  : "No system roles assigned"
-              }
+              value={user.systemRole || "No system role assigned"}
             />
           </div>
         </div>

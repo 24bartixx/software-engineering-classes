@@ -18,5 +18,5 @@ export class UserProfileDto {
   lastModification: string;
   branches: string[];
   departments: string[];
-  systemRoles: string[];
+  systemRole: string;
 }

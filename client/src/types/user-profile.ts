@@ -18,5 +18,5 @@ export type UserProfile = {
   lastModification: string;
   branches: string[];
   departments: string[];
-  systemRoles: string[];
+  systemRole: string;
 };

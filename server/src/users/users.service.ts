@@ -6,6 +6,7 @@ import { Employee } from './entities/employee.entity';
 import { HrEmployee } from './entities/hr-employee.entity';
 import { ProjectManager } from './entities/project-manager.entity';
 import { Administrator } from './entities/administrator.entity';
+import { EmployeeDepartment } from '../employee-department/entities/employee-department.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
@@ -23,6 +24,8 @@ export class UsersService {
     private projectManagerRepository: Repository<ProjectManager>,
     @InjectRepository(Administrator)
     private administratorRepository: Repository<Administrator>,
+    @InjectRepository(EmployeeDepartment)
+    private employeeDepartmentRepository: Repository<EmployeeDepartment>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -68,13 +71,25 @@ export class UsersService {
     if (!user)
       throw new NotFoundException(`Użytkownik o ID ${id} nie istnieje`);
 
-    const systemRoles: string[] = [];
+    let systemRole = 'Employee';
+    const departments: string[] = [];
 
     const employee = await this.employeeRepository.findOne({
       where: { user_id: id },
     });
 
     if (employee) {
+      const employeeDepartments = await this.employeeDepartmentRepository.find({
+        where: { employeeId: employee.employee_id },
+        relations: ['department'],
+      });
+
+      if (employeeDepartments.length > 0) {
+        const uniqueDepartments = new Set(
+          employeeDepartments.map((ed) => ed.department.name),
+        );
+        departments.push(...uniqueDepartments);
+      }
       const hrEmployee = await this.hrEmployeeRepository.findOne({
         where: { employee_id: employee.employee_id },
       });
@@ -98,22 +113,16 @@ export class UsersService {
         if (adminByPm) isAdmin = true;
       }
 
+      // Determine single system role based on priority
       if (isAdmin) {
-        systemRoles.push('Admin');
+        systemRole = 'Admin';
+      } else if (projectManager) {
+        systemRole = 'Project Manager';
+      } else if (hrEmployee) {
+        systemRole = 'HR Employee';
+      } else {
+        systemRole = 'Employee';
       }
-
-      // Add Project Manager role
-      if (projectManager) {
-        systemRoles.push('Project Manager');
-      }
-
-      // Add HR Employee role
-      if (hrEmployee) {
-        systemRoles.push('HR Employee');
-      }
-
-      // Add Employee role (base role)
-      systemRoles.push('Employee');
     }
 
     const birthDate = new Date(user.birthday_date);
@@ -136,8 +145,8 @@ export class UsersService {
       employeeSince: user.created_at.toISOString().split('T')[0],
       lastModification: user.modified_at.toISOString().split('T')[0],
       branches: [],
-      departments: [],
-      systemRoles: systemRoles,
+      departments: departments,
+      systemRole: systemRole,
     };
   }
 }

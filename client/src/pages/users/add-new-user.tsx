@@ -69,7 +69,9 @@ export default function AddNewUser() {
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [systemRole, setSystemRole] = useState<SystemRole | null>(null);
+  const [systemRole, setSystemRole] = useState<SystemRole | null>(
+    systemRoleOptions.find((role) => role.value === "employee") || null,
+  );
 
   const [departmentOptions, setDepartmentOptions] = useState<Department[]>([]);
   const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
@@ -341,6 +343,21 @@ export default function AddNewUser() {
           </div>
 
           <div className="w-full">
+            <CustomSelect
+              label="System role"
+              options={systemRoleOptions}
+              value={systemRole}
+              onChange={(v) => {
+                setSystemRole(v);
+                if (fieldError === "systemRole") setFieldError(null);
+                if (error && fieldError === "systemRole") setError("");
+              }}
+              placeholder="Employee"
+              isErr={fieldError === "systemRole"}
+            />
+          </div>
+
+          <div className="w-full">
             <CustomMultiSelect
               label="Departments"
               options={departmentOptions}
@@ -361,21 +378,6 @@ export default function AddNewUser() {
                 setBranches(v);
               }}
               placeholder="Wroclaw"
-            />
-          </div>
-
-          <div className="w-full">
-            <CustomSelect
-              label="System role"
-              options={systemRoleOptions}
-              value={systemRole}
-              onChange={(v) => {
-                setSystemRole(v);
-                if (fieldError === "systemRole") setFieldError(null);
-                if (error && fieldError === "systemRole") setError("");
-              }}
-              placeholder="Employee"
-              isErr={fieldError === "systemRole"}
             />
           </div>
         </div>
