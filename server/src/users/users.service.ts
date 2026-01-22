@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 import { Employee } from '../employee/entities/employee.entity';
 import { HrEmployee } from '../hr-employee/entities/hr-employee.entity';
 import { EmployeeDepartment } from '../employee-department/entities/employee-department.entity';
+import { EmployeeBranch } from '../employee-branch/entities/employee-branch.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
@@ -26,6 +27,8 @@ export class UsersService {
     private administratorRepository: Repository<Administrator>,
     @InjectRepository(EmployeeDepartment)
     private employeeDepartmentRepository: Repository<EmployeeDepartment>,
+    @InjectRepository(EmployeeBranch)
+    private employeeBranchRepository: Repository<EmployeeBranch>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -73,6 +76,7 @@ export class UsersService {
 
     let systemRole = 'Employee';
     const departments: string[] = [];
+    const branches: string[] = [];
 
     const employee = await this.employeeRepository.findOne({
       where: { user: { user_id: id } },
@@ -90,6 +94,20 @@ export class UsersService {
           employeeDepartments.map((ed) => ed.department.name),
         );
         departments.push(...uniqueDepartments);
+      }
+
+      const employeeBranches = await this.employeeBranchRepository.find({
+        where: { employeeId: employee.id },
+        relations: ['branch', 'branch.address'],
+      });
+
+      if (employeeBranches.length > 0) {
+        const uniqueBranches = new Set(
+          employeeBranches.map(
+            (eb) => eb.branch.address?.city || `Branch #${eb.branch.branch_id}`,
+          ),
+        );
+        branches.push(...uniqueBranches);
       }
       const hrEmployee = await this.hrEmployeeRepository.findOne({
         where: { employee: { id: employee.id } },
@@ -145,7 +163,7 @@ export class UsersService {
       addressApartment: user.address?.apartment || '',
       employeeSince: user.created_at.toISOString().split('T')[0],
       lastModification: user.modified_at.toISOString().split('T')[0],
-      branches: [],
+      branches: branches,
       departments: departments,
       systemRole: systemRole,
     };

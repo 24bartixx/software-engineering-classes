@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { Employee } from '../employee/entities/employee.entity';
 import { HrEmployee } from '../hr-employee/entities/hr-employee.entity';
 import { EmployeeDepartment } from '../employee-department/entities/employee-department.entity';
+import { EmployeeBranch } from '../employee-branch/entities/employee-branch.entity';
 import { Administrator } from 'src/administrator/entities/administrator.entity';
 import { ProjectManager } from 'src/project-managers/entities/project-manager.entity';
 
@@ -18,6 +19,7 @@ import { ProjectManager } from 'src/project-managers/entities/project-manager.en
       ProjectManager,
       Administrator,
       EmployeeDepartment,
+      EmployeeBranch,
     ]),
   ],
   controllers: [UsersController],
