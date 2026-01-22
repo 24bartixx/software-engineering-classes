@@ -8,6 +8,9 @@ import { AddressesModule } from './addresses/addresses.module';
 import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
 import { SystemConfigModule } from './system-config/system-config.module';
+import { DepartmentModule } from './department/department.module';
+import { EmployeeModule } from './employee/employee.module';
+import { EmployeeDepartmentModule } from './employee-department/employee-department.module';
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { SystemConfigModule } from './system-config/system-config.module';
     ProjectsModule,
     BelbinModule,
     RolesModule,
+    DepartmentModule,
+    EmployeeModule,
+    EmployeeDepartmentModule,
   ],
   controllers: [],
   providers: [],

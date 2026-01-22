@@ -1,6 +1,6 @@
 import { Controller, Get, Post } from '@nestjs/common';
 import {BelbinService} from "./belbin.service";
-import { BelbinQuestion } from "./entities/belbin-question";
+import { BelbinQuestion } from "./entities/belbin-question.entity";
 import { ExpiredBelbinTestDto } from "./dto/expired-belbin-test.dto";
 import { EmployeeBelbinResultDto } from "./dto/employee-belbin-result.dto";
 
@@ -9,7 +9,7 @@ export class BelbinController {
     constructor(private readonly belbinService: BelbinService) {}
 
     @Get('questions')
-    getBelbinQuestions(): Promise<BelbinQuestion[]> {          // or one question ??
+    getBelbinQuestions(): Promise<BelbinQuestion[]> {
         return this.belbinService.getBelbinQuestions();
     }
 

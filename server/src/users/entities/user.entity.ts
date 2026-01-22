@@ -1,3 +1,4 @@
+import { Exclude } from "class-transformer";
 import { Address } from 'src/addresses/entities/address.entity';
 import { Gender } from 'src/common/gender.enum';
 import {
@@ -23,6 +24,7 @@ export class User {
   email: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @Column()
@@ -38,6 +40,7 @@ export class User {
   isactivated: boolean;
 
   @Column({ type: 'varchar', nullable: true })
+  @Exclude()
   verification_token?: string | null;
 
   @Column()

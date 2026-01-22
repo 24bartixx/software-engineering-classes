@@ -1,19 +1,19 @@
 import {Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 type Statement = {
-    id: number;
+    id: string;
     text: string;
     relatedRole: string;
 }
 
 @Entity('belbin_question')
 export class BelbinQuestion {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({ name: 'belbin_question_id' })
     id: number;
 
     @Column()
     content: string;
 
-    @Column()
-    statements: string; // TODO - change to JSON type
+    @Column({ type: 'jsonb' })
+    statements: Statement[];
 }

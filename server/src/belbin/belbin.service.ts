@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BelbinQuestion } from "./entities/belbin-question";
+import { BelbinQuestion } from "./entities/belbin-question.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ExpiredBelbinTestDto } from "./dto/expired-belbin-test.dto";
