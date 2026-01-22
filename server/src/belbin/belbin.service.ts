@@ -12,6 +12,7 @@ import {BelbinRolesMetadata} from "./entities/belbin-roles-metadata.entity";
 import {BelbinTestStatus, EmployeeTestStatusDto} from "./dto/employee-test-status.dto";
 import {Employee} from "src/employee/entities/employee.entity";
 import { EmailService } from "src/common/email.service";
+import {BelbinTestAnswersDto} from "./dto/belbin-test-answers.dto";
 
 @Injectable()
 export class BelbinService {
@@ -143,6 +144,42 @@ export class BelbinService {
 
         await this.emailService.sendExpiredTestNotification(employee.user.email, testExpirationDate.toLocaleDateString())
         return { message: 'The notification about expired belbin test sent!' };
+    }
+
+    async saveTestResults(testAnswersDto: BelbinTestAnswersDto) {
+        const employee = await this.employeeRepository.findOne({ where: { id: testAnswersDto.id } });
+        if (!employee) throw new NotFoundException(`Pracownik o ID ${testAnswersDto.id} nie istnieje`);
+
+        const allQuestions = await this.belbinQuestionRepository.find();
+        const questionToRoleFieldMap = new Map<string, keyof BelbinTest>;
+        allQuestions.forEach(section => {
+            section.statements.forEach(statement => {
+                questionToRoleFieldMap.set(statement.id, statement.relatedRoleFieldName as keyof BelbinTest);
+            });
+        });
+
+        const newBelbinTest = new BelbinTest();
+        newBelbinTest.employee = employee;
+        newBelbinTest.performedAt = new Date();
+
+        for (const [questionId, points] of Object.entries(testAnswersDto.answers)) {
+            const targetScoreFieldName = questionToRoleFieldMap.get(questionId);
+            if (targetScoreFieldName) {
+                const roleCurrentScore = (newBelbinTest as any)[targetScoreFieldName] || 0;
+                newBelbinTest[targetScoreFieldName] = roleCurrentScore + points;
+            } else {
+                console.warn(`Nieznane ID pytania: ${questionId}`);
+            }
+        }
+
+        const existingTest = await this.belbinTestRepository.findOne({
+            where: { employee: { id: employee.id } }
+        });
+        if (existingTest) {
+            await this.belbinTestRepository.remove(existingTest);
+        }
+
+        return await this.belbinTestRepository.save(newBelbinTest);
     }
 
     private async getTestValidityDays() {

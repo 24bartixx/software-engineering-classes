@@ -36,42 +36,42 @@ const BELBIN_QUESTIONS = [
             {
                 id: "1a",
                 text: "Potrafię szybko dostrzegać i wykorzystywać nowe możliwości",
-                relatedRole: "Resource Investigator"
+                relatedRoleFieldName: "resourceInvestigatorScore"
             },
             {
                 id: "1b",
                 text: "Dobrze współpracuję z różnymi ludźmi",
-                relatedRole: "Teamworker"
+                relatedRoleFieldName: "teamWorkerScore"
             },
             {
                 id: "1c",
                 text: "Generowanie pomysłów jest moją naturalną umiejętnością",
-                relatedRole: "Plant"
+                relatedRoleFieldName: "plantScore"
             },
             {
                 id: "1d",
                 text: "Umiem sprawić, aby ludzie pracowali nad konkretnymi zadaniami",
-                relatedRole: "Coordinator"
+                relatedRoleFieldName: "coordinatorScore"
             },
             {
                 id: "1e",
                 text: "Mam zdolność do doprowadzania spraw do końca",
-                relatedRole: "Completer Finisher"
+                relatedRoleFieldName: "completerFinisherScore"
             },
             {
                 id: "1f",
                 text: "Jestem gotów być niepopularnym, jeśli prowadzi to do sensownych rezultatów",
-                relatedRole: "Shaper"
+                relatedRoleFieldName: "shaperScore"
             },
             {
                 id: "1g",
                 text: "Potrafię przedstawić, co mam do zaoferowania w danej sytuacji",
-                relatedRole: "Specialist"
+                relatedRoleFieldName: "specialistScore"
             },
             {
                 id: "1h",
                 text: "Umiem rozpoznawać możliwości mojego zespołu i je wykorzystywać",
-                relatedRole: "Coordinator"
+                relatedRoleFieldName: "coordinatorScore"
             }
         ]
     },
@@ -81,42 +81,42 @@ const BELBIN_QUESTIONS = [
             {
                 id: "2a",
                 text: "Czuję się nieswojo, dopóki spotkania nie są dobrze zorganizowane i kontrolowane",
-                relatedRole: "Implementer"
+                relatedRoleFieldName: "implementerScore"
             },
             {
                 id: "2b",
                 text: "Mam skłonność do okazywania wielkoduszności wobec innych",
-                relatedRole: "Teamworker"
+                relatedRoleFieldName: "teamWorkerScore"
             },
             {
                 id: "2c",
                 text: "Mam tendencję do zbyt dużego mówienia",
-                relatedRole: "Resource Investigator"
+                relatedRoleFieldName: "resourceInvestigatorScore"
             },
             {
                 id: "2d",
                 text: "Mój obiektywny pogląd utrudnia mi dołączenie do kolegów",
-                relatedRole: "Monitor Evaluator"
+                relatedRoleFieldName: "monitorEvaluatorScore"
             },
             {
                 id: "2e",
                 text: "Czasami jestem postrzegany jako osoba wywierająca presję",
-                relatedRole: "Shaper"
+                relatedRoleFieldName: "shaperScore"
             },
             {
                 id: "2f",
                 text: "Trudno mi stawić czoła trudnym sytuacjom",
-                relatedRole: "Teamworker"
+                relatedRoleFieldName: "teamWorkerScore"
             },
             {
                 id: "2g",
                 text: "Mam tendencję do popadania w marzenia, gdy tracę zainteresowanie",
-                relatedRole: "Plant"
+                relatedRoleFieldName: "plantScore"
             },
             {
                 id: "2h",
                 text: "Znajduję trudności w rozpoczynaniu, gdy nie są jasne cele",
-                relatedRole: "Specialist"
+                relatedRoleFieldName: "specialistScore"
             }
         ]
     },
@@ -126,42 +126,42 @@ const BELBIN_QUESTIONS = [
             {
                 id: "3a",
                 text: "Potrafię wpływać na ludzi bez wywierania na nich presji",
-                relatedRole: "Coordinator"
+                relatedRoleFieldName: "coordinatorScore"
             },
             {
                 id: "3b",
                 text: "Moja czujność zapobiega błędom i zaniedbaniom",
-                relatedRole: "Completer Finisher"
+                relatedRoleFieldName: "completerFinisherScore"
             },
             {
                 id: "3c",
                 text: "Jestem gotów naciskać na działanie, aby upewnić się, że spotkanie nie jest stratą czasu",
-                relatedRole: "Shaper"
+                relatedRoleFieldName: "shaperScore"
             },
             {
                 id: "3d",
                 text: "Można na mnie liczyć, że wniosę coś oryginalnego",
-                relatedRole: "Plant"
+                relatedRoleFieldName: "plantScore"
             },
             {
                 id: "3e",
                 text: "Jestem zawsze gotów poprzeć dobrą propozycję",
-                relatedRole: "Teamworker"
+                relatedRoleFieldName: "teamWorkerScore"
             },
             {
                 id: "3f",
                 text: "Szybko znajduję to, co jest możliwe do osiągnięcia",
-                relatedRole: "Resource Investigator"
+                relatedRoleFieldName: "resourceInvestigatorScore"
             },
             {
                 id: "3g",
                 text: "Wierzę, że moja zdolność do osądzania może pomóc w podjęciu właściwych decyzji",
-                relatedRole: "Monitor Evaluator"
+                relatedRoleFieldName: "monitorEvaluatorScore"
             },
             {
                 id: "3h",
                 text: "Można na mnie polegać, że dopilnuję szczegółów",
-                relatedRole: "Implementer"
+                relatedRoleFieldName: "implementerScore"
             }
         ]
     },
@@ -171,42 +171,42 @@ const BELBIN_QUESTIONS = [
             {
                 id: "4a",
                 text: "Mam szczególne zainteresowanie poznawaniem moich kolegów",
-                relatedRole: "Teamworker"
+                relatedRoleFieldName: "teamWorkerScore"
             },
             {
                 id: "4b",
                 text: "Nie waham się kwestionować poglądów innych lub stanowić mniejszości",
-                relatedRole: "Shaper"
+                relatedRoleFieldName: "shaperScore"
             },
             {
                 id: "4c",
                 text: "Zazwyczaj potrafię znaleźć argumenty przeciwko nieprawidłowym propozycjom",
-                relatedRole: "Monitor Evaluator"
+                relatedRoleFieldName: "monitorEvaluatorScore"
             },
             {
                 id: "4d",
                 text: "Myślę, że mam talent do tego, aby sprawy działały, gdy plan musi być zrealizowany",
-                relatedRole: "Implementer"
+                relatedRoleFieldName: "implementerScore"
             },
             {
                 id: "4e",
                 text: "Mam tendencję do unikania oczywistego i wychodzenia z czymś nieoczekiwanym",
-                relatedRole: "Plant"
+                relatedRoleFieldName: "plantScore"
             },
             {
                 id: "4f",
                 text: "Dobieram perfekcyjnie wszystko, co robię",
-                relatedRole: "Completer Finisher"
+                relatedRoleFieldName: "completerFinisherScore"
             },
             {
                 id: "4g",
                 text: "Umiem wykorzystać kontakty zewnętrzne",
-                relatedRole: "Resource Investigator"
+                relatedRoleFieldName: "resourceInvestigatorScore"
             },
             {
                 id: "4h",
                 text: "Interesują mnie wszystkie poglądy, ale nie mam problemu z podjęciem decyzji",
-                relatedRole: "Coordinator"
+                relatedRoleFieldName: "coordinatorScore"
             }
         ]
     },
@@ -216,42 +216,42 @@ const BELBIN_QUESTIONS = [
             {
                 id: "5a",
                 text: "Lubię analizować sytuacje i rozważać wszystkie możliwe opcje",
-                relatedRole: "Monitor Evaluator"
+                relatedRoleFieldName: "monitorEvaluatorScore"
             },
             {
                 id: "5b",
                 text: "Interesuję się znajdowaniem praktycznych rozwiązań problemów",
-                relatedRole: "Implementer"
+                relatedRoleFieldName: "implementerScore"
             },
             {
                 id: "5c",
                 text: "Lubię czuć, że sprzyjam dobrym relacjom roboczym",
-                relatedRole: "Teamworker"
+                relatedRoleFieldName: "teamWorkerScore"
             },
             {
                 id: "5d",
                 text: "Potrafię mieć silny wpływ na decyzje",
-                relatedRole: "Shaper"
+                relatedRoleFieldName: "shaperScore"
             },
             {
                 id: "5e",
                 text: "Mogę poznać ludzi, którzy mogą zaoferować coś nowego",
-                relatedRole: "Resource Investigator"
+                relatedRoleFieldName: "resourceInvestigatorScore"
             },
             {
                 id: "5f",
                 text: "Mogę sprawić, że ludzie zgodzą się co do kierunku działania",
-                relatedRole: "Coordinator"
+                relatedRoleFieldName: "coordinatorScore"
             },
             {
                 id: "5g",
                 text: "Czuję się w swoim żywiole, gdy mogę skupić całą uwagę na zadaniu",
-                relatedRole: "Specialist"
+                relatedRoleFieldName: "specialistScore"
             },
             {
                 id: "5h",
                 text: "Lubię znajdować obszar, który pobudza moją wyobraźnię",
-                relatedRole: "Plant"
+                relatedRoleFieldName: "plantScore"
             }
         ]
     },
@@ -261,42 +261,42 @@ const BELBIN_QUESTIONS = [
             {
                 id: "6a",
                 text: "Czułbym się jak wycofanie się w róg, aby opracować sposób wyjścia z impasu",
-                relatedRole: "Plant"
+                relatedRoleFieldName: "plantScore"
             },
             {
                 id: "6b",
                 text: "Byłbym gotów pracować z osobą, która wykazuje najbardziej pozytywne podejście",
-                relatedRole: "Teamworker"
+                relatedRoleFieldName: "teamWorkerScore"
             },
             {
                 id: "6c",
                 text: "Znalazłbym sposób na zmniejszenie rozmiaru zadania poprzez ustalenie, co różni ludzie mogą najlepiej wnieść",
-                relatedRole: "Coordinator"
+                relatedRoleFieldName: "coordinatorScore"
             },
             {
                 id: "6d",
                 text: "Moje naturalne poczucie pilności pomogłoby nam dotrzymać harmonogramu",
-                relatedRole: "Completer Finisher"
+                relatedRoleFieldName: "completerFinisherScore"
             },
             {
                 id: "6e",
                 text: "Wierzę, że zachowałbym spokój i zdolność do logicznego myślenia",
-                relatedRole: "Monitor Evaluator"
+                relatedRoleFieldName: "monitorEvaluatorScore"
             },
             {
                 id: "6f",
                 text: "Utrzymałbym stały cel pomimo presji",
-                relatedRole: "Implementer"
+                relatedRoleFieldName: "implementerScore"
             },
             {
                 id: "6g",
                 text: "Byłbym gotów przejąć prowadzenie, gdyby grupa nie posuwała się naprzód",
-                relatedRole: "Shaper"
+                relatedRoleFieldName: "shaperScore"
             },
             {
                 id: "6h",
                 text: "Otworzyłbym dyskusje mające na celu stymulowanie nowych myśli i popchnięcie czegoś",
-                relatedRole: "Resource Investigator"
+                relatedRoleFieldName: "resourceInvestigatorScore"
             }
         ]
     },
@@ -306,42 +306,42 @@ const BELBIN_QUESTIONS = [
             {
                 id: "7a",
                 text: "Mam skłonność do okazywania niecierpliwości wobec tych, którzy utrudniają postęp",
-                relatedRole: "Shaper"
+                relatedRoleFieldName: "shaperScore"
             },
             {
                 id: "7b",
                 text: "Inni mogą mnie krytykować za to, że jestem zbyt analityczny",
-                relatedRole: "Monitor Evaluator"
+                relatedRoleFieldName: "monitorEvaluatorScore"
             },
             {
                 id: "7c",
                 text: "Moje pragnienie, aby wszystko było dobrze zrobione, może czasami powodować opóźnienia",
-                relatedRole: "Completer Finisher"
+                relatedRoleFieldName: "completerFinisherScore"
             },
             {
                 id: "7d",
                 text: "Mam tendencję do szybkiego znudzenia się i polegam na jednym lub dwóch stymulujących członkach, aby wzbudzić moje zainteresowanie",
-                relatedRole: "Plant"
+                relatedRoleFieldName: "plantScore"
             },
             {
                 id: "7e",
                 text: "Trudno mi zacząć, jeśli cele nie są jasne",
-                relatedRole: "Implementer"
+                relatedRoleFieldName: "implementerScore"
             },
             {
                 id: "7f",
                 text: "Czasami mam trudności z wyjaśnieniem i objaśnieniem złożonych kwestii",
-                relatedRole: "Specialist"
+                relatedRoleFieldName: "specialistScore"
             },
             {
                 id: "7g",
                 text: "Jestem świadomy wymagania od innych czegoś, czego sam nie jestem w stanie zrobić",
-                relatedRole: "Coordinator"
+                relatedRoleFieldName: "coordinatorScore"
             },
             {
                 id: "7h",
                 text: "Waham się przedstawić mój punkt widzenia w obecności silnej opozycji",
-                relatedRole: "Teamworker"
+                relatedRoleFieldName: "teamWorkerScore"
             }
         ]
     }

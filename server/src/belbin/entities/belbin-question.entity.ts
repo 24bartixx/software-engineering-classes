@@ -3,7 +3,7 @@ import {Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 type Statement = {
     id: string;
     text: string;
-    relatedRole: string;
+    relatedRoleFieldName: string;
 }
 
 @Entity('belbin_question')

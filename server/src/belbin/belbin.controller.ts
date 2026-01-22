@@ -1,9 +1,11 @@
-import { Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import {BelbinService} from "./belbin.service";
 import { BelbinQuestion } from "./entities/belbin-question.entity";
 import { ExpiredBelbinTestDto } from "./dto/expired-belbin-test.dto";
 import { EmployeeBelbinResultDto } from "./dto/employee-belbin-result.dto";
 import { EmployeeTestStatusDto } from "./dto/employee-test-status.dto";
+import { BelbinTestAnswersDto } from "./dto/belbin-test-answers.dto";
+import { BelbinTest } from "./entities/belbin-test.entity";
 
 @Controller('belbin')
 export class BelbinController {
@@ -30,8 +32,8 @@ export class BelbinController {
     }
 
     @Post('answers')
-    async provideEmployeeTestAnswers() {
-
+    async provideEmployeeTestAnswers(@Body() testAnswersDto: BelbinTestAnswersDto): Promise<BelbinTest> {
+        return await this.belbinService.saveTestResults(testAnswersDto);
     }
 
     @Post('notify-expired/:employeeId')
