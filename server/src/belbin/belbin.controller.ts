@@ -3,6 +3,7 @@ import {BelbinService} from "./belbin.service";
 import { BelbinQuestion } from "./entities/belbin-question.entity";
 import { ExpiredBelbinTestDto } from "./dto/expired-belbin-test.dto";
 import { EmployeeBelbinResultDto } from "./dto/employee-belbin-result.dto";
+import { EmployeeTestStatusDto } from "./dto/employee-test-status.dto";
 
 @Controller('belbin')
 export class BelbinController {
@@ -23,8 +24,10 @@ export class BelbinController {
         return this.belbinService.getEmployeeTestResults(employeeId);
     }
 
-    @Get('info/:employeeId')
-    async getEmployeeTestInfo() {}
+    @Get('info')
+    async getEmployeesTestInfo(): Promise<EmployeeTestStatusDto[]> {
+        return this.belbinService.getEmployeeTestInfo();
+    }
 
     @Post('answers')
     async provideEmployeeTestAnswers() {

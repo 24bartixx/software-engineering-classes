@@ -1,14 +1,16 @@
-import {Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { BelbinQuestion } from "./entities/belbin-question.entity";
-import {LessThan, Repository } from "typeorm";
-import { InjectRepository } from "@nestjs/typeorm";
-import {addDays, subDays } from 'date-fns';
-import { ExpiredBelbinTestDto } from "./dto/expired-belbin-test.dto";
+import {Inject, Injectable, NotFoundException} from '@nestjs/common';
+import {BelbinQuestion} from "./entities/belbin-question.entity";
+import {LessThan, Repository} from "typeorm";
+import {InjectRepository} from "@nestjs/typeorm";
+import {addDays, isBefore, subDays} from 'date-fns';
+import {ExpiredBelbinTestDto} from "./dto/expired-belbin-test.dto";
 import {BelbinCategoryResult, EmployeeBelbinResultDto} from "./dto/employee-belbin-result.dto";
-import { SystemConfigService } from "src/system-config/system-config.service";
-import { BelbinTest } from "./entities/belbin-test.entity";
-import { SystemConfigKeysEnum } from "src/common/system-config-keys.enum";
-import { BelbinRolesMetadata } from "./entities/belbin-roles-metadata.entity";
+import {SystemConfigService} from "src/system-config/system-config.service";
+import {BelbinTest} from "./entities/belbin-test.entity";
+import {SystemConfigKeysEnum} from "src/common/system-config-keys.enum";
+import {BelbinRolesMetadata} from "./entities/belbin-roles-metadata.entity";
+import {BelbinTestStatus, EmployeeTestStatusDto} from "./dto/employee-test-status.dto";
+import {Employee} from "src/employee/entities/employee.entity";
 
 @Injectable()
 export class BelbinService {
@@ -19,6 +21,8 @@ export class BelbinService {
         private belbinTestRepository: Repository<BelbinTest>,
         @InjectRepository(BelbinRolesMetadata)
         private belbinRolesMetadataRepository: Repository<BelbinRolesMetadata>,
+        @InjectRepository(Employee)
+        private employeeRepository: Repository<Employee>,
         @Inject()
         private systemConfigService: SystemConfigService
     ) {}
@@ -47,7 +51,7 @@ export class BelbinService {
                 lastName: test.employee.user.last_name,
                 departments: currentDepartments,
                 testExpirationDate: addDays(test.performedAt, testValidityDays),
-            }
+            };
         });
     }
 
@@ -67,7 +71,7 @@ export class BelbinService {
                 name: roleMetadata.name,
                 score: belbinTest[roleMetadata.property] || 0,
                 description: roleMetadata.description,
-            }
+            };
         });
 
         return {
@@ -77,6 +81,35 @@ export class BelbinService {
             testDate: belbinTest.performedAt,
             results: testResults,
         };
+    }
+
+    async getEmployeeTestInfo(): Promise<EmployeeTestStatusDto[]> {
+        const testValidityDays = await this.getTestValidityDays();
+        const now = new Date();
+        const employees = await this.employeeRepository.find({
+            relations: ['user', 'belbinTest'],
+        });
+
+        return employees.map(employee => {
+            let lastTestDate: Date | null = null;
+            let testStatus: BelbinTestStatus = BelbinTestStatus.NOT_STARTED;
+            if (employee.belbinTest) {
+                lastTestDate = employee.belbinTest.performedAt;
+                const testExpirationDate = addDays(lastTestDate, testValidityDays);
+                if (isBefore(testExpirationDate, now)) {
+                    testStatus = BelbinTestStatus.EXPIRED;
+                } else {
+                    testStatus = BelbinTestStatus.COMPLETED;
+                }
+            }
+
+            return {
+                id: employee.id,
+                name: `${employee.user.first_name} ${employee.user.last_name}`,
+                status: testStatus,
+                lastTestDate: lastTestDate,
+            };
+        });
     }
 
     private async getTestValidityDays() {
