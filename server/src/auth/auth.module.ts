@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User } from 'src/users/entities/user.entity';
-import { Employee } from 'src/users/entities/employee.entity';
+import { Employee } from 'src/employee/entities/employee.entity';
 import { HrEmployee } from 'src/users/entities/hr-employee.entity';
 import { ProjectManager } from 'src/users/entities/project-manager.entity';
 import { Administrator } from 'src/users/entities/administrator.entity';

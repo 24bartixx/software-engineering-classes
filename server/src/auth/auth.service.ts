@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Employee } from 'src/users/entities/employee.entity';
+import { Employee } from 'src/employee/entities/employee.entity';
 import { HrEmployee } from 'src/users/entities/hr-employee.entity';
 import { ProjectManager } from 'src/users/entities/project-manager.entity';
 import { Administrator } from 'src/users/entities/administrator.entity';
@@ -37,8 +37,8 @@ export class AuthService {
     departmentIds?: number[],
   ): Promise<void> {
     const employee = this.employeeRepository.create({
-      employed_at: new Date(),
-      user_id: userId,
+      employedAt: new Date(),
+      user: { user_id: userId } as any,
     });
     const savedEmployee = await this.employeeRepository.save(employee);
 
@@ -46,7 +46,7 @@ export class AuthService {
     if (departmentIds && departmentIds.length > 0) {
       const employeeDepartments = departmentIds.map((departmentId) =>
         this.employeeDepartmentRepository.create({
-          employeeId: savedEmployee.employee_id,
+          employeeId: savedEmployee.id,
           departmentId: departmentId,
           startedAt: new Date(),
         }),
@@ -60,27 +60,27 @@ export class AuthService {
 
       case SystemRole.HR_EMPLOYEE:
         const hrEmployee = this.hrEmployeeRepository.create({
-          employee_id: savedEmployee.employee_id,
+          employee_id: savedEmployee.id,
         });
         await this.hrEmployeeRepository.save(hrEmployee);
         break;
 
       case SystemRole.PROJECT_MANAGER:
         const projectManager = this.projectManagerRepository.create({
-          employee_id: savedEmployee.employee_id,
+          employee_id: savedEmployee.id,
         });
         await this.projectManagerRepository.save(projectManager);
         break;
 
       case SystemRole.ADMIN:
         const adminHrEmployee = this.hrEmployeeRepository.create({
-          employee_id: savedEmployee.employee_id,
+          employee_id: savedEmployee.id,
         });
         const savedHrEmployee =
           await this.hrEmployeeRepository.save(adminHrEmployee);
 
         const adminProjectManager = this.projectManagerRepository.create({
-          employee_id: savedEmployee.employee_id,
+          employee_id: savedEmployee.id,
         });
         const savedProjectManager =
           await this.projectManagerRepository.save(adminProjectManager);

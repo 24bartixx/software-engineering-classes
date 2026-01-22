@@ -15,9 +15,6 @@ export class Branch {
   @Column()
   is_hq: boolean;
 
-  @Column()
-  address_id: number;
-
   @ManyToOne(() => Address)
   @JoinColumn({ name: 'address_id' })
   address: Address;

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Employee } from './entities/employee.entity';
+import { Employee } from '../employee/entities/employee.entity';
 import { HrEmployee } from './entities/hr-employee.entity';
 import { ProjectManager } from './entities/project-manager.entity';
 import { Administrator } from './entities/administrator.entity';
@@ -75,12 +75,13 @@ export class UsersService {
     const departments: string[] = [];
 
     const employee = await this.employeeRepository.findOne({
-      where: { user_id: id },
+      where: { user: { user_id: id } },
+      relations: ['user'],
     });
 
     if (employee) {
       const employeeDepartments = await this.employeeDepartmentRepository.find({
-        where: { employeeId: employee.employee_id },
+        where: { employeeId: employee.id },
         relations: ['department'],
       });
 
@@ -91,11 +92,11 @@ export class UsersService {
         departments.push(...uniqueDepartments);
       }
       const hrEmployee = await this.hrEmployeeRepository.findOne({
-        where: { employee_id: employee.employee_id },
+        where: { employee_id: employee.id },
       });
 
       const projectManager = await this.projectManagerRepository.findOne({
-        where: { employee_id: employee.employee_id },
+        where: { employee_id: employee.id },
       });
 
       let isAdmin = false;

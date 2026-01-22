@@ -11,6 +11,8 @@ import { SystemConfigModule } from './system-config/system-config.module';
 import { DepartmentModule } from './department/department.module';
 import { EmployeeModule } from './employee/employee.module';
 import { EmployeeDepartmentModule } from './employee-department/employee-department.module';
+import { BranchesModule } from './branches/branches.module';
+import { HrEmployeeModule } from './hr-employee/hr-employee.module';
 
 @Module({
   imports: [
@@ -23,18 +25,21 @@ import { EmployeeDepartmentModule } from './employee-department/employee-departm
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE || 'teambuilder',
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: true,
     }),
     SystemConfigModule,
     AuthModule,
-    AddressesModule,
     UsersModule,
+    EmployeeModule,
+    HrEmployeeModule,
+    HrEmployeeModule,
+    DepartmentModule,
+    EmployeeDepartmentModule,
+    BranchesModule,
+    AddressesModule,
     ProjectsModule,
     BelbinModule,
     RolesModule,
-    DepartmentModule,
-    EmployeeModule,
-    EmployeeDepartmentModule,
   ],
   controllers: [],
   providers: [],
