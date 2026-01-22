@@ -7,6 +7,7 @@ import { BelbinModule } from './belbin/belbin.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
+import { SystemConfigModule } from './system-config/system-config.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
       autoLoadEntities: true,
       synchronize: false,
     }),
+    SystemConfigModule,
     AuthModule,
     AddressesModule,
     UsersModule,
