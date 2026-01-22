@@ -90,4 +90,14 @@ export class CreateUserAuthDto {
   @IsArray()
   @IsNumber({}, { each: true })
   department_ids?: number[];
+
+  @ApiProperty({
+    required: false,
+    description: 'List of branch IDs to assign to the employee',
+    type: [Number],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  branch_ids?: number[];
 }

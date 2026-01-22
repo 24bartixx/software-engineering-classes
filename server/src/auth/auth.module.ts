@@ -8,6 +8,7 @@ import { HrEmployee } from 'src/hr-employee/entities/hr-employee.entity';
 import { ProjectManager } from 'src/project-managers/entities/project-manager.entity';
 import { Administrator } from 'src/administrator/entities/administrator.entity';
 import { EmployeeDepartment } from 'src/employee-department/entities/employee-department.entity';
+import { EmployeeBranch } from 'src/employee-branch/entities/employee-branch.entity';
 import { AddressesModule } from 'src/addresses/addresses.module';
 import { EmailService } from 'src/common/email.service';
 
@@ -20,6 +21,7 @@ import { EmailService } from 'src/common/email.service';
       ProjectManager,
       Administrator,
       EmployeeDepartment,
+      EmployeeBranch,
     ]),
     AddressesModule,
   ],

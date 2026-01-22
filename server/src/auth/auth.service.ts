@@ -6,6 +6,7 @@ import { HrEmployee } from 'src/hr-employee/entities/hr-employee.entity';
 import { ProjectManager } from 'src/project-managers/entities/project-manager.entity';
 import { Administrator } from 'src/administrator/entities/administrator.entity';
 import { EmployeeDepartment } from 'src/employee-department/entities/employee-department.entity';
+import { EmployeeBranch } from 'src/employee-branch/entities/employee-branch.entity';
 import { Repository } from 'typeorm';
 import { CreateUserAuthDto } from './dtos/create-user-auth.dto';
 import { VerifyAccountDto } from './dtos/verify-account.dto';
@@ -28,6 +29,8 @@ export class AuthService {
     private administratorRepository: Repository<Administrator>,
     @InjectRepository(EmployeeDepartment)
     private employeeDepartmentRepository: Repository<EmployeeDepartment>,
+    @InjectRepository(EmployeeBranch)
+    private employeeBranchRepository: Repository<EmployeeBranch>,
     private addressesService: AddressesService,
   ) {}
 
@@ -35,6 +38,7 @@ export class AuthService {
     userId: number,
     systemRole: SystemRole,
     departmentIds?: number[],
+    branchIds?: number[],
   ): Promise<void> {
     const employee = this.employeeRepository.create({
       employedAt: new Date(),
@@ -52,6 +56,18 @@ export class AuthService {
         }),
       );
       await this.employeeDepartmentRepository.save(employeeDepartments);
+    }
+
+    // Save employee-branch relationships if branch IDs are provided
+    if (branchIds && branchIds.length > 0) {
+      const employeeBranches = branchIds.map((branchId) =>
+        this.employeeBranchRepository.create({
+          employeeId: savedEmployee.id,
+          branchId: branchId,
+          startedAt: new Date(),
+        }),
+      );
+      await this.employeeBranchRepository.save(employeeBranches);
     }
 
     switch (systemRole) {
@@ -150,6 +166,7 @@ export class AuthService {
       savedUser.user_id,
       createUserDto.system_role,
       createUserDto.department_ids,
+      createUserDto.branch_ids,
     );
 
     return savedUser;

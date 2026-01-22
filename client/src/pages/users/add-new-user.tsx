@@ -15,19 +15,9 @@ import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import type { Gender } from "../../types/gender";
 import { createAccount } from "../../services/api/users-api";
 import { getAllDepartments } from "../../services/api/departments-api";
+import { getAllBranches } from "../../services/api/branches-api";
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/outline";
 import type { Address } from "../../types/address";
-
-const branchOptions: Branch[] = [
-  { value: "warsaw-hq", label: "Warsaw (HQ)", isHq: true },
-  { value: "krakow", label: "Kraków", isHq: false },
-  { value: "wroclaw", label: "Wrocław", isHq: false },
-  { value: "poznan", label: "Poznań", isHq: false },
-  { value: "gdansk", label: "Gdańsk", isHq: false },
-  { value: "lodz", label: "Łódź", isHq: false },
-  { value: "remote-pl", label: "Remote (Poland)", isHq: false },
-  { value: "remote-eu", label: "Remote (EU)", isHq: false },
-];
 
 const systemRoleOptions: SystemRole[] = [
   { value: "admin", label: "Admin" },
@@ -75,6 +65,8 @@ export default function AddNewUser() {
 
   const [departmentOptions, setDepartmentOptions] = useState<Department[]>([]);
   const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
+  const [branchOptions, setBranchOptions] = useState<Branch[]>([]);
+  const [isLoadingBranches, setIsLoadingBranches] = useState(true);
 
   const [error, setError] = useState("");
   const [fieldError, setFieldError] = useState<FieldKey | null>(null);
@@ -108,6 +100,21 @@ export default function AddNewUser() {
       }
     };
     fetchDepartments();
+  }, []);
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        setIsLoadingBranches(true);
+        const branchs = await getAllBranches();
+        setBranchOptions(branchs);
+      } catch (err) {
+        console.error("Failed to fetch branches:", err);
+      } finally {
+        setIsLoadingBranches(false);
+      }
+    };
+    fetchBranches();
   }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -175,6 +182,9 @@ export default function AddNewUser() {
         }),
         ...(departments.length > 0 && {
           department_ids: departments.map((d) => Number.parseInt(d.value)),
+        }),
+        ...(branches.length > 0 && {
+          branch_ids: branches.map((b) => Number.parseInt(b.value)),
         }),
       });
 

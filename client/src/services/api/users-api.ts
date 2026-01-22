@@ -19,6 +19,7 @@ export interface CreateAccountDto {
   number?: string;
   apartment?: string;
   department_ids?: number[];
+  branch_ids?: number[];
 }
 
 export interface VerifyAccountDto {
