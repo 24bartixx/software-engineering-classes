@@ -59,4 +59,15 @@ export class UsersController {
     await this.usersService.editUser(id, editUserDto);
     return { message: 'User updated successfully!' };
   }
+
+  @Get('get-address/:id')
+  async getAddress(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getAddress(id);
+  }
+
+  @Post('remove-address/:id')
+  async removeAddress(@Param('id', ParseIntPipe) id: number) {
+    await this.usersService.removeAddress(id);
+    return { message: 'Address removed successfully!' };
+  }
 }

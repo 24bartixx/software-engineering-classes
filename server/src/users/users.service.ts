@@ -6,6 +6,7 @@ import { Employee } from '../employee/entities/employee.entity';
 import { HrEmployee } from '../hr-employee/entities/hr-employee.entity';
 import { EmployeeDepartment } from '../employee-department/entities/employee-department.entity';
 import { EmployeeBranch } from '../employee-branch/entities/employee-branch.entity';
+import { Address } from 'src/addresses/entities/address.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
@@ -29,6 +30,8 @@ export class UsersService {
     private employeeDepartmentRepository: Repository<EmployeeDepartment>,
     @InjectRepository(EmployeeBranch)
     private employeeBranchRepository: Repository<EmployeeBranch>,
+    @InjectRepository(Address)
+    private addressRepository: Repository<Address>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -239,5 +242,46 @@ export class UsersService {
     }
 
     return savedUser;
+  }
+
+  async getAddress(userId: number): Promise<Address | null> {
+    const user = await this.usersRepository.findOne({
+      where: { user_id: userId },
+      relations: ['address'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    return user.address || null;
+  }
+
+  async removeAddress(userId: number): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const addressId = user.address_id;
+
+    // Set user's address_id to null using update to ensure it's persisted
+    await this.usersRepository.update(userId, {
+      address_id: null,
+      modified_at: new Date(),
+    });
+
+    // Try to remove the address if it exists
+    if (addressId) {
+      try {
+        await this.addressRepository.delete(addressId);
+      } catch (error) {
+        // If deletion fails (e.g., other users reference it), that's okay
+        // The address_id is already set to null for this user
+      }
+    }
   }
 }

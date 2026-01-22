@@ -9,6 +9,7 @@ import { EmployeeDepartment } from '../employee-department/entities/employee-dep
 import { EmployeeBranch } from '../employee-branch/entities/employee-branch.entity';
 import { Administrator } from 'src/administrator/entities/administrator.entity';
 import { ProjectManager } from 'src/project-managers/entities/project-manager.entity';
+import { Address } from 'src/addresses/entities/address.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ProjectManager } from 'src/project-managers/entities/project-manager.en
       Administrator,
       EmployeeDepartment,
       EmployeeBranch,
+      Address,
     ]),
   ],
   controllers: [UsersController],

@@ -1,4 +1,5 @@
 export type Address = {
+  address_id?: number;
   country: string;
   state?: string;
   postalCode: string;

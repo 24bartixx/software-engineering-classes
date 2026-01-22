@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { UserProfile } from "../../types/user-profile";
+import type { Address } from "../../types/address";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -66,6 +67,21 @@ export const editUser = async (id: number, data: EditUserDto) => {
   const response = await axios.post(
     `${API_BASE_URL}/users/edit-user/${id}`,
     data,
+  );
+  return response.data;
+};
+
+export const getAddress = async (id: number): Promise<Address | null> => {
+  const response = await axios.get<Address | null>(
+    `${API_BASE_URL}/users/get-address/${id}`,
+  );
+  return response.data;
+};
+
+export const removeAddressFromUser = async (id: number) => {
+  console.log(id);
+  const response = await axios.post(
+    `${API_BASE_URL}/users/remove-address/${id}`,
   );
   return response.data;
 };
