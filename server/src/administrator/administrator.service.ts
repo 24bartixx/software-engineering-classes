@@ -72,32 +72,6 @@ export class AdministratorService {
     return administrator;
   }
 
-  async update(
-    id: number,
-    updateAdministratorDto: UpdateAdministratorDto,
-  ): Promise<Administrator> {
-    const administrator = await this.findOne(id);
-
-    if (updateAdministratorDto.hrEmployeeId) {
-      const hrEmployee = await this.ensureHrEmployeeExists(
-        updateAdministratorDto.hrEmployeeId,
-      );
-      administrator.hr_employee_id = updateAdministratorDto.hrEmployeeId;
-      administrator.hrEmployee = hrEmployee;
-    }
-
-    if (updateAdministratorDto.projectManagerId) {
-      const projectManager = await this.ensureProjectManagerExists(
-        updateAdministratorDto.projectManagerId,
-      );
-      administrator.project_manager_id =
-        updateAdministratorDto.projectManagerId;
-      administrator.projectManager = projectManager;
-    }
-
-    return await this.administratorRepository.save(administrator);
-  }
-
   async remove(id: number): Promise<void> {
     const administrator = await this.findOne(id);
     await this.administratorRepository.remove(administrator);

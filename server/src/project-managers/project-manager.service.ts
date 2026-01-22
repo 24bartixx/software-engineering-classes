@@ -51,25 +51,6 @@ export class ProjectManagerService {
     return projectManager;
   }
 
-  async update(
-    id: number,
-    updateProjectManagerDto: UpdateProjectManagerDto,
-  ): Promise<ProjectManager> {
-    const projectManager = await this.findOne(id);
-    if (updateProjectManagerDto.employeeId) {
-      const employee = await this.ensureEmployeeExists(
-        updateProjectManagerDto.employeeId,
-      );
-      if (projectManager.employee.id !== updateProjectManagerDto.employeeId) {
-        await this.ensureEmployeeIsNotProjectManager(
-          updateProjectManagerDto.employeeId,
-        );
-      }
-      projectManager.employee = employee;
-    }
-    return await this.projectManagerRepository.save(projectManager);
-  }
-
   async remove(id: number): Promise<void> {
     const projectManager = await this.findOne(id);
     await this.projectManagerRepository.remove(projectManager);

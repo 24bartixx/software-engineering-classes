@@ -37,14 +37,6 @@ export class HrEmployeeController {
     return await this.hrEmployeeService.findOne(id);
   }
 
-  @Patch(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateHrEmployeeDto: UpdateHrEmployeeDto,
-  ): Promise<HrEmployee> {
-    return await this.hrEmployeeService.update(id, updateHrEmployeeDto);
-  }
-
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.hrEmployeeService.remove(id);

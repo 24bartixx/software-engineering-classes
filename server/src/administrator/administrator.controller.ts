@@ -37,14 +37,6 @@ export class AdministratorController {
     return await this.administratorService.findOne(id);
   }
 
-  @Patch(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateAdministratorDto: UpdateAdministratorDto,
-  ): Promise<Administrator> {
-    return await this.administratorService.update(id, updateAdministratorDto);
-  }
-
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.administratorService.remove(id);

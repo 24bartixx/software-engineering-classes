@@ -47,25 +47,6 @@ export class HrEmployeeService {
     return hrEmployee;
   }
 
-  async update(
-    id: number,
-    updateHrEmployeeDto: UpdateHrEmployeeDto,
-  ): Promise<HrEmployee> {
-    const hrEmployee = await this.findOne(id);
-    if (updateHrEmployeeDto.employeeId) {
-      const employee = await this.ensureEmployeeExists(
-        updateHrEmployeeDto.employeeId,
-      );
-      if (hrEmployee.employee.id !== updateHrEmployeeDto.employeeId) {
-        await this.ensureEmployeeIsNotHrEmployee(
-          updateHrEmployeeDto.employeeId,
-        );
-      }
-      hrEmployee.employee = employee;
-    }
-    return await this.hrEmployeeRepository.save(hrEmployee);
-  }
-
   async remove(id: number): Promise<void> {
     const hrEmployee = await this.findOne(id);
     await this.hrEmployeeRepository.remove(hrEmployee);

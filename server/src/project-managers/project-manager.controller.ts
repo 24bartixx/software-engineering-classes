@@ -39,14 +39,6 @@ export class ProjectManagerController {
     return await this.projectManagerService.findOne(id);
   }
 
-  @Patch(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateProjectManagerDto: UpdateProjectManagerDto,
-  ): Promise<ProjectManager> {
-    return await this.projectManagerService.update(id, updateProjectManagerDto);
-  }
-
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.projectManagerService.remove(id);
