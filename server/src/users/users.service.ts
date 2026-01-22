@@ -2,6 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { Employee } from './entities/employee.entity';
+import { HrEmployee } from './entities/hr-employee.entity';
+import { ProjectManager } from './entities/project-manager.entity';
+import { Administrator } from './entities/administrator.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
@@ -11,6 +15,14 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Employee)
+    private employeeRepository: Repository<Employee>,
+    @InjectRepository(HrEmployee)
+    private hrEmployeeRepository: Repository<HrEmployee>,
+    @InjectRepository(ProjectManager)
+    private projectManagerRepository: Repository<ProjectManager>,
+    @InjectRepository(Administrator)
+    private administratorRepository: Repository<Administrator>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -56,6 +68,54 @@ export class UsersService {
     if (!user)
       throw new NotFoundException(`Użytkownik o ID ${id} nie istnieje`);
 
+    const systemRoles: string[] = [];
+
+    const employee = await this.employeeRepository.findOne({
+      where: { user_id: id },
+    });
+
+    if (employee) {
+      const hrEmployee = await this.hrEmployeeRepository.findOne({
+        where: { employee_id: employee.employee_id },
+      });
+
+      const projectManager = await this.projectManagerRepository.findOne({
+        where: { employee_id: employee.employee_id },
+      });
+
+      let isAdmin = false;
+      if (hrEmployee) {
+        const adminByHr = await this.administratorRepository.findOne({
+          where: { hr_employee_id: hrEmployee.hr_employee_id },
+        });
+        if (adminByHr) isAdmin = true;
+      }
+
+      if (projectManager) {
+        const adminByPm = await this.administratorRepository.findOne({
+          where: { project_manager_id: projectManager.project_manager_id },
+        });
+        if (adminByPm) isAdmin = true;
+      }
+
+      if (isAdmin) {
+        systemRoles.push('Admin');
+      }
+
+      // Add Project Manager role
+      if (projectManager) {
+        systemRoles.push('Project Manager');
+      }
+
+      // Add HR Employee role
+      if (hrEmployee) {
+        systemRoles.push('HR Employee');
+      }
+
+      // Add Employee role (base role)
+      systemRoles.push('Employee');
+    }
+
     const birthDate = new Date(user.birthday_date);
     return {
       userId: user.user_id,
@@ -77,7 +137,7 @@ export class UsersService {
       lastModification: user.modified_at.toISOString().split('T')[0],
       branches: [],
       departments: [],
-      systemRoles: [],
+      systemRoles: systemRoles,
     };
   }
 }
