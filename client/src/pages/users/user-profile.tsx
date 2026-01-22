@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import PageCard from "../../components/page-card";
 import ProfileDataField from "../../components/profile-data-field";
+import { PencilIcon } from "@heroicons/react/24/outline";
 import type { UserProfile } from "../../types/user-profile";
 import { getUserProfile } from "../../services/api/users-api";
 
@@ -57,11 +58,19 @@ export default function UserProfile() {
     <PageCard>
       <div className="w-full max-w-2xl px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-black">
-            {user.firstName} {user.lastName}
-          </h1>
-          <p className="text-base text-black/60 mt-1">{user.email}</p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-black">
+              {user.firstName} {user.lastName}
+            </h1>
+            <p className="text-base text-black/60 mt-1">{user.email}</p>
+          </div>
+          <button
+            onClick={() => navigate(`/edit-user/${user.userId}`)}
+            className="h-11 w-11 rounded-xl hover:bg-gray-100 active:scale-[0.99] flex items-center justify-center flex-shrink-0"
+          >
+            <PencilIcon className="h-7 w-7 text-black" />
+          </button>
         </div>
 
         {/* Personal Data Section */}
@@ -75,6 +84,9 @@ export default function UserProfile() {
               label="Birth date"
               value={`${String(user.birthDay).padStart(2, "0")}.${String(user.birthMonth).padStart(2, "0")}.${user.birthYear}`}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-6  mt-6">
+            <ProfileDataField label="Gender" value={user.gender} />
           </div>
           <div className="mt-6">
             <ProfileDataField

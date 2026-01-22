@@ -5,12 +5,16 @@ import {
   Body,
   Patch,
   Param,
-  Delete, UseInterceptors, ClassSerializerInterceptor,
+  Delete,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
+import { EditUserDto } from './dto/edit-user.dto';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -45,5 +49,14 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
+  }
+
+  @Post('edit-user/:id')
+  async editUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() editUserDto: EditUserDto,
+  ) {
+    await this.usersService.editUser(id, editUserDto);
+    return { message: 'User updated successfully!' };
   }
 }

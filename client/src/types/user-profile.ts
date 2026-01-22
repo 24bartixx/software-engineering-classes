@@ -4,6 +4,7 @@ export type UserProfile = {
   lastName: string;
   email: string;
   phoneNumber: string;
+  gender: string;
   birthYear: number;
   birthMonth: number;
   birthDay: number;

@@ -151,6 +151,7 @@ export class UsersService {
       lastName: user.last_name,
       email: user.email,
       phoneNumber: user.phone_number,
+      gender: user.gender,
       birthYear: birthDate.getUTCFullYear(),
       birthMonth: birthDate.getUTCMonth() + 1,
       birthDay: birthDate.getUTCDate(),
@@ -167,5 +168,76 @@ export class UsersService {
       departments: departments,
       systemRole: systemRole,
     };
+  }
+
+  async editUser(userId: number, editUserDto: any): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Update basic user fields
+    user.first_name = editUserDto.first_name;
+    user.last_name = editUserDto.last_name;
+    user.email = editUserDto.email;
+    user.gender = editUserDto.gender;
+    user.phone_number = editUserDto.phone_number;
+    user.birthday_date = editUserDto.birthday_date;
+    user.modified_at = new Date();
+
+    const savedUser = await this.usersRepository.save(user);
+
+    // Find employee record
+    const employee = await this.employeeRepository.findOne({
+      where: { user: { user_id: userId } },
+    });
+
+    if (employee) {
+      // Handle departments: remove all existing and add new ones
+      await this.employeeDepartmentRepository.delete({
+        employeeId: employee.id,
+      });
+
+      if (editUserDto.department_ids && editUserDto.department_ids.length > 0) {
+        const employeeDepartments = editUserDto.department_ids.map(
+          (departmentId: number) =>
+            this.employeeDepartmentRepository.create({
+              employeeId: employee.id,
+              departmentId: departmentId,
+              startedAt: new Date(),
+            }),
+        );
+        await this.employeeDepartmentRepository.save(employeeDepartments);
+      }
+
+      // Handle branches: remove all existing and add new ones
+      await this.employeeBranchRepository.delete({
+        employeeId: employee.id,
+      });
+
+      if (editUserDto.branch_ids && editUserDto.branch_ids.length > 0) {
+        const employeeBranches = editUserDto.branch_ids.map(
+          (branchId: number) =>
+            this.employeeBranchRepository.create({
+              employeeId: employee.id,
+              branchId: branchId,
+              startedAt: new Date(),
+            }),
+        );
+        await this.employeeBranchRepository.save(employeeBranches);
+      }
+
+      // TODO: Handle system role changes
+      // This is complex because we need to:
+      // 1. Check current role (Employee, HR_EMPLOYEE, PROJECT_MANAGER, ADMIN)
+      // 2. Remove old role records (hr_employee, project_manager, administrator)
+      // 3. Create new role records based on editUserDto.system_role
+      // 4. Ensure data integrity across related tables
+    }
+
+    return savedUser;
   }
 }

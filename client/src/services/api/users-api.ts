@@ -27,6 +27,17 @@ export interface VerifyAccountDto {
   repeat_password: string;
 }
 
+export interface EditUserDto {
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender: "Male" | "Female" | "Other";
+  phone_number: string;
+  birthday_date: string;
+  department_ids?: number[];
+  branch_ids?: number[];
+}
+
 export const createAccount = async (data: CreateAccountDto) => {
   console.log(`${API_BASE_URL}/auth/create-account`);
   const response = await axios.post(
@@ -47,6 +58,14 @@ export const verifyAccount = async (token: string, data: VerifyAccountDto) => {
 export const getUserProfile = async (id: number): Promise<UserProfile> => {
   const response = await axios.get<UserProfile>(
     `${API_BASE_URL}/users/profile/${id}`,
+  );
+  return response.data;
+};
+
+export const editUser = async (id: number, data: EditUserDto) => {
+  const response = await axios.post(
+    `${API_BASE_URL}/users/edit-user/${id}`,
+    data,
   );
   return response.data;
 };

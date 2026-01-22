@@ -14,6 +14,7 @@ import MangerBelbinPreview from "./pages/hr-belbin-preview";
 import SuccessfulActivation from "./pages/users/successful-activation";
 import Home from "./pages/home/home";
 import FailedActivation from "./pages/users/failed-activation";
+import EditUser from "./pages/users/edit-user";
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "add-user", element: <AddNewUser /> },
+      { path: "edit-user/:id", element: <EditUser /> },
       { path: "users/add-address", element: <AddAddress /> },
       { path: "activate-account", element: <ActivateAccount /> },
       { path: "successful-activation", element: <SuccessfulActivation /> },

@@ -20,6 +20,10 @@ export default function CustomMultiSelect<T extends Option>({
   const id = `multi-${label.replace(/\s+/g, "-").toLowerCase()}`;
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   useEffect(() => {
     const onDocDown = (e: MouseEvent) => {
@@ -29,6 +33,29 @@ export default function CustomMultiSelect<T extends Option>({
     document.addEventListener("mousedown", onDocDown);
     return () => document.removeEventListener("mousedown", onDocDown);
   }, []);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
 
   const selectedValueSet = useMemo(() => {
     return new Set(value.map((v) => v.value));
@@ -66,18 +93,26 @@ export default function CustomMultiSelect<T extends Option>({
             id={id}
             type="button"
             onClick={() => setOpen((s) => !s)}
-            className="flex h-14 w-full items-center gap-3 rounded-2xl border border-black bg-white px-4 pr-12 text-left outline-none focus:ring-2 focus:ring-black/20"
+            className="flex h-14 w-full items-center gap-3 rounded-2xl border border-black bg-white px-4 pr-12 text-left outline-none focus:ring-2 focus:ring-black/20 overflow-hidden"
             aria-haspopup="listbox"
             aria-expanded={open}
           >
-            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div
+              ref={scrollRef}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              className={`flex min-w-0 flex-1 items-center gap-3 overflow-x-auto overflow-y-hidden py-1 ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
               {selected.length === 0 ? (
                 <span className="text-black/50">{placeholder}</span>
               ) : (
                 selected.map((s) => (
                   <span
                     key={s.value}
-                    className="flex items-center gap-3 rounded-2xl bg-black px-5 py-2 text-base text-white"
+                    className="flex items-center gap-3 rounded-2xl bg-black px-5 py-2 text-base text-white whitespace-nowrap flex-shrink-0"
                   >
                     {s.label}
                     <button
