@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Employee } from 'src/employee/entities/employee.entity';
-import { HrEmployee } from 'src/users/entities/hr-employee.entity';
+import { HrEmployee } from 'src/hr-employee/entities/hr-employee.entity';
 import { ProjectManager } from 'src/users/entities/project-manager.entity';
-import { Administrator } from 'src/users/entities/administrator.entity';
+import { Administrator } from 'src/administrator/entities/administrator.entity';
 import { EmployeeDepartment } from 'src/employee-department/entities/employee-department.entity';
 import { Repository } from 'typeorm';
 import { CreateUserAuthDto } from './dtos/create-user-auth.dto';
@@ -60,33 +60,33 @@ export class AuthService {
 
       case SystemRole.HR_EMPLOYEE:
         const hrEmployee = this.hrEmployeeRepository.create({
-          employee_id: savedEmployee.id,
+          employee: savedEmployee,
         });
         await this.hrEmployeeRepository.save(hrEmployee);
         break;
 
       case SystemRole.PROJECT_MANAGER:
         const projectManager = this.projectManagerRepository.create({
-          employee_id: savedEmployee.id,
+          employee: savedEmployee,
         });
         await this.projectManagerRepository.save(projectManager);
         break;
 
       case SystemRole.ADMIN:
         const adminHrEmployee = this.hrEmployeeRepository.create({
-          employee_id: savedEmployee.id,
+          employee: savedEmployee,
         });
         const savedHrEmployee =
           await this.hrEmployeeRepository.save(adminHrEmployee);
 
         const adminProjectManager = this.projectManagerRepository.create({
-          employee_id: savedEmployee.id,
+          employee: savedEmployee,
         });
         const savedProjectManager =
           await this.projectManagerRepository.save(adminProjectManager);
 
         const administrator = this.administratorRepository.create({
-          hr_employee_id: savedHrEmployee.hr_employee_id,
+          hr_employee_id: savedHrEmployee.id,
           project_manager_id: savedProjectManager.project_manager_id,
         });
         await this.administratorRepository.save(administrator);

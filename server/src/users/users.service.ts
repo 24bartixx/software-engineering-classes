@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Employee } from '../employee/entities/employee.entity';
-import { HrEmployee } from './entities/hr-employee.entity';
+import { HrEmployee } from '../hr-employee/entities/hr-employee.entity';
 import { ProjectManager } from './entities/project-manager.entity';
-import { Administrator } from './entities/administrator.entity';
 import { EmployeeDepartment } from '../employee-department/entities/employee-department.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
+import { Administrator } from 'src/administrator/entities/administrator.entity';
 
 @Injectable()
 export class UsersService {
@@ -92,7 +92,7 @@ export class UsersService {
         departments.push(...uniqueDepartments);
       }
       const hrEmployee = await this.hrEmployeeRepository.findOne({
-        where: { employee_id: employee.id },
+        where: { employee: { id: employee.id } },
       });
 
       const projectManager = await this.projectManagerRepository.findOne({
@@ -102,7 +102,7 @@ export class UsersService {
       let isAdmin = false;
       if (hrEmployee) {
         const adminByHr = await this.administratorRepository.findOne({
-          where: { hr_employee_id: hrEmployee.hr_employee_id },
+          where: { hr_employee_id: hrEmployee.id },
         });
         if (adminByHr) isAdmin = true;
       }

@@ -5,8 +5,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { HrEmployee } from './hr-employee.entity';
-import { ProjectManager } from './project-manager.entity';
+import { HrEmployee } from '../../hr-employee/entities/hr-employee.entity';
+import { ProjectManager } from '../../users/entities/project-manager.entity';
 
 @Entity()
 export class Administrator {

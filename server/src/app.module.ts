@@ -13,6 +13,7 @@ import { EmployeeModule } from './employee/employee.module';
 import { EmployeeDepartmentModule } from './employee-department/employee-department.module';
 import { BranchesModule } from './branches/branches.module';
 import { HrEmployeeModule } from './hr-employee/hr-employee.module';
+import { AdministratorModule } from './administrator/administrator.module';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { HrEmployeeModule } from './hr-employee/hr-employee.module';
     UsersModule,
     EmployeeModule,
     HrEmployeeModule,
-    HrEmployeeModule,
+    AdministratorModule,
     DepartmentModule,
     EmployeeDepartmentModule,
     BranchesModule,
