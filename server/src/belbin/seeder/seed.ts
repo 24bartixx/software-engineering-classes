@@ -6,6 +6,7 @@ import { EmployeeDepartment } from '../../employee-department/entities/employee-
 import { BelbinTest } from '../entities/belbin-test.entity';
 import { Address } from 'src/addresses/entities/address.entity';
 import { SystemConfigService } from 'src/system-config/system-config.service';
+import { SystemConfigKeysEnum } from "src/common/system-config-keys.enum";
 
 const employeesData = [
   {
@@ -87,7 +88,7 @@ export async function seed(systemConfigService: SystemConfigService) {
   try {
     console.log('Rozpoczynam seedowanie...');
 
-    systemConfigService.set('belbin_test_validity_days', '180');
+    systemConfigService.set(SystemConfigKeysEnum.BELBIN_TEST_VALIDITY_DAYS, '180');
 
     const address = new Address();
     address.country = 'Poland';

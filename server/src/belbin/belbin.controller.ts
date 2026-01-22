@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import {BelbinService} from "./belbin.service";
 import { BelbinQuestion } from "./entities/belbin-question.entity";
 import { ExpiredBelbinTestDto } from "./dto/expired-belbin-test.dto";
@@ -9,30 +9,30 @@ export class BelbinController {
     constructor(private readonly belbinService: BelbinService) {}
 
     @Get('questions')
-    getBelbinQuestions(): Promise<BelbinQuestion[]> {
+    async getBelbinQuestions(): Promise<BelbinQuestion[]> {
         return this.belbinService.getBelbinQuestions();
     }
 
     @Get('expired')
-    getExpiredBelbinTests(): Promise<ExpiredBelbinTestDto[]> {
+    async getExpiredBelbinTests(): Promise<ExpiredBelbinTestDto[]> {
         return this.belbinService.getExpiredBelbinTests();
     }
 
     @Get('results/:employeeId')
-    getEmployeeTestResults(): Promise<EmployeeBelbinResultDto> {
-        return this.belbinService.getEmployeeTestResults();
+    async getEmployeeTestResults(@Param('employeeId', ParseIntPipe) employeeId: number): Promise<EmployeeBelbinResultDto> {
+        return this.belbinService.getEmployeeTestResults(employeeId);
     }
 
     @Get('info/:employeeId')
-    getEmployeeTestInfo() {}
+    async getEmployeeTestInfo() {}
 
     @Post('answers')
-    provideEmployeeTestAnswers() {
+    async provideEmployeeTestAnswers() {
 
     }
 
     @Post('notify/:employeeId')
-    sendNotification() {
+    async sendNotification() {
 
     }
 }

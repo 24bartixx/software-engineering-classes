@@ -2,21 +2,34 @@ import {Injectable, OnModuleInit } from "@nestjs/common";
 import {BelbinQuestion} from "../entities/belbin-question.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { BelbinRolesMetadata } from "../entities/belbin-roles-metadata.entity";
 
 @Injectable()
 export class BelbinQuestionSeeder implements OnModuleInit {
     constructor(
-        @InjectRepository(BelbinQuestion) private questionRepo: Repository<BelbinQuestion>
+        @InjectRepository(BelbinQuestion) private questionRepo: Repository<BelbinQuestion>,
+        @InjectRepository(BelbinRolesMetadata) private belbinRolesMetadataRepo: Repository<BelbinRolesMetadata>
     ) {}
 
     async onModuleInit() {
+        await this.seedQuestions();
+        await this.seedMetadata();
+    }
+
+    async seedQuestions() {
         if (await this.questionRepo.count() > 0) return;
-        await this.questionRepo.save(belbinQuestions);
+        await this.questionRepo.save(BELBIN_QUESTIONS);
         console.log('Pytania Belbina załadowane do bazy');
+    }
+
+    async seedMetadata() {
+        if (await this.belbinRolesMetadataRepo.count() > 0) return;
+        await this.belbinRolesMetadataRepo.save(BELBIN_ROLES_METADATA);
+        console.log('Metadane ról Belbina załadowane do bazy');
     }
 }
 
-const belbinQuestions = [
+const BELBIN_QUESTIONS = [
     {
         content: "Co jest moim wkładem w pracę zespołu?",
         statements: [
@@ -334,27 +347,59 @@ const belbinQuestions = [
     }
 ];
 
-export const roleNamesMap = {
-    "Plant": "Kreator",
-    "Resource Investigator": "Poszukiwacz źródeł",
-    "Coordinator": "Koordynator",
-    "Shaper": "Inspirator",
-    "Monitor Evaluator": "Ewaluator",
-    "Teamworker": "Dusza zespołu",
-    "Implementer": "Realizator",
-    "Completer Finisher": "Perfekcjonista",
-    "Specialist": "Specjalista"
-};
-
-// Angielskie nazwy ról w kolejności do scoringu
-export const belbinRoleOrder = [
-    "Implementer",
-    "Coordinator",
-    "Shaper",
-    "Plant",
-    "Monitor Evaluator",
-    "Resource Investigator",
-    "Teamworker",
-    "Completer Finisher",
-    "Specialist"
+const BELBIN_ROLES_METADATA = [
+    {
+        property: 'plantScore',
+        id: 'plant',
+        name: 'Kreator (Plant)',
+        description: 'Kreatywny, pomysłowy, obdarzony wyobraźnią, nieszablonowy. Rozwiązuje trudne problemy w nietypowy sposób.'
+    },
+    {
+        property: 'resourceInvestigatorScore',
+        id: 'resource_investigator',
+        name: 'Poszukiwacz Źródeł (Resource Investigator)',
+        description: 'Entuzjastyczny, komunikatywny. Bada możliwości i rozwija kontakty.'
+    },
+    {
+        property: 'coordinatorScore',
+        id: 'coordinator',
+        name: 'Koordynator (Coordinator)',
+        description: 'Dojrzały, pewny siebie. Wyjaśnia cele, promuje decyzyjność i dobrze deleguje zadania.'
+    },
+    {
+        property: 'shaperScore',
+        id: 'shaper',
+        name: 'Inspirator (Shaper)',
+        description: 'Dynamiczny, otwarty, radzi sobie z presją. Ma odwagę i siłę, by pokonywać przeszkody.'
+    },
+    {
+        property: 'monitorEvaluatorScore',
+        id: 'monitor_evaluator',
+        name: 'Ewaluator (Monitor Evaluator)',
+        description: 'Strategiczny i wnikliwy. Widzi wszystkie opcje i trafnie ocenia sytuację. Rzadko się myli.'
+    },
+    {
+        property: 'teamWorkerScore',
+        id: 'teamworker',
+        name: 'Dusza Zespołu (Teamworker)',
+        description: 'Kooperatywny, dyplomatyczny, spostrzegawczy. Słucha innych i łagodzi konflikty. Buduje harmonię w grupie.'
+    },
+    {
+        property: 'implementerScore',
+        id: 'implementer',
+        name: 'Realizator (Implementer)',
+        description: 'Praktyczny, niezawodny, zorganizowany, zdyscyplinowany. Przekształca pomysły w konkretne działania.'
+    },
+    {
+        property: 'completerFinisherScore',
+        id: 'completer_finisher',
+        name: 'Perfekcjonista (Completer Finisher)',
+        description: 'Sumienny, dbający o szczegóły. Sprawdza pracę pod kątem błędów i pilnuje, aby wszystko było wykonane na czas.'
+    },
+    {
+        property: 'specialistScore',
+        id: 'specialist',
+        name: 'Specjalista (Specialist)',
+        description: 'Jednostka skupiona na celu. Dostarcza rzadkiej wiedzy i umiejętności.'
+    }
 ];

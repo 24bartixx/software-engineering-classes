@@ -11,9 +11,10 @@ import { Employee } from "../employee/entities/employee.entity";
 import { User } from "src/users/entities/user.entity";
 import { BelbinQuestionSeeder } from "./seeder/belbin-question.seeder";
 import { Address } from "src/addresses/entities/address.entity";
+import {BelbinRolesMetadata} from "./entities/belbin-roles-metadata.entity";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([BelbinQuestion, BelbinTest, Department, EmployeeDepartment, Employee, User, Address])],
+    imports: [TypeOrmModule.forFeature([BelbinQuestion, BelbinTest, BelbinRolesMetadata, Department, EmployeeDepartment, Employee, User, Address])],
     controllers: [BelbinController],
     providers: [BelbinService, BelbinQuestionSeeder, BelbinSeeder]
 })
