@@ -13,7 +13,10 @@ export class BranchesService {
   ) {}
 
   async create(createBranchDto: CreateBranchDto): Promise<Branch> {
-    const branch = this.branchRepository.create(createBranchDto);
+    const branch = this.branchRepository.create({
+      is_hq: createBranchDto.is_hq,
+      address: { address_id: createBranchDto.address_id } as any,
+    });
     return await this.branchRepository.save(branch);
   }
 

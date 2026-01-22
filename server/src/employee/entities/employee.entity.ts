@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { EmployeeDepartment } from '../../employee-department/entities/employee-department.entity';
+import { EmployeeBranch } from '../../employee-branch/entities/employee-branch.entity';
 import { BelbinTest } from '../../belbin/entities/belbin-test.entity';
 
 @Entity('employee')
@@ -34,4 +35,7 @@ export class Employee {
 
   @OneToMany(() => EmployeeDepartment, (ed) => ed.employee)
   departmentsHistory: EmployeeDepartment[];
+
+  @OneToMany(() => EmployeeBranch, (eb) => eb.employee)
+  branchesHistory: EmployeeBranch[];
 }

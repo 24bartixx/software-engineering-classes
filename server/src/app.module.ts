@@ -11,6 +11,7 @@ import { SystemConfigModule } from './system-config/system-config.module';
 import { DepartmentModule } from './department/department.module';
 import { EmployeeModule } from './employee/employee.module';
 import { EmployeeDepartmentModule } from './employee-department/employee-department.module';
+import { EmployeeBranchModule } from './employee-branch/employee-branch.module';
 import { BranchesModule } from './branches/branches.module';
 import { HrEmployeeModule } from './hr-employee/hr-employee.module';
 import { AdministratorModule } from './administrator/administrator.module';
@@ -37,8 +38,9 @@ import { ProjectManagerModule } from './project-managers/project-manager.module'
     ProjectManagerModule,
     AdministratorModule,
     DepartmentModule,
-    EmployeeDepartmentModule,
     BranchesModule,
+    EmployeeDepartmentModule,
+    EmployeeBranchModule,
     AddressesModule,
     ProjectsModule,
     BelbinModule,
