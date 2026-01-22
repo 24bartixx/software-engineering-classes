@@ -1,4 +1,4 @@
-export type UserProfile = {
+export class UserProfileDto {
   userId: number;
   firstName: string;
   lastName: string;
@@ -19,4 +19,4 @@ export type UserProfile = {
   branches: string[];
   departments: string[];
   systemRoles: string[];
-};
+}

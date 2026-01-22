@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import PageCard from "../components/page-card";
+import PageCard from "../../components/page-card";
 
 export default function FailedActivation() {
   const navigate = useNavigate();

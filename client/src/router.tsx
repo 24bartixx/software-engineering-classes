@@ -3,10 +3,7 @@ import RootLayout from "./layouts/root-layout";
 import AddNewUser from "./pages/users/add-new-user";
 import AddAddress from "./pages/users/add-address";
 import UserProfile from "./pages/users/user-profile";
-import Home from "./pages/home";
 import ActivateAccount from "./pages/users/activate-account";
-import SuccessfulActivation from "./pages/successful-activation";
-import FailedActivation from "./pages/failed-activation";
 import Projects from "./pages/projects";
 import ProjectDetails from "./pages/project-details";
 import DoBelbinTest from "./pages/do-belbin-test";
@@ -14,6 +11,9 @@ import BelbinResults from "./pages/user-belbin-results";
 import BelbinDashboard from "./pages/belbin-dashboard";
 import ExpiredTestsView from "./pages/expired-belbin-tests";
 import MangerBelbinPreview from "./pages/hr-belbin-preview";
+import SuccessfulActivation from "./pages/users/successful-activation";
+import Home from "./pages/home/home";
+import FailedActivation from "./pages/users/failed-activation";
 
 export const router = createBrowserRouter([
   {
@@ -23,9 +23,9 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "add-user", element: <AddNewUser /> },
       { path: "users/add-address", element: <AddAddress /> },
-      { path: "user-profile/:id", element: <UserProfile /> },
       { path: "activate-account", element: <ActivateAccount /> },
       { path: "successful-activation", element: <SuccessfulActivation /> },
+      { path: "user-profile/:id", element: <UserProfile /> },
       { path: "failed-activation", element: <FailedActivation /> },
       { path: "projects", element: <Projects /> },
       { path: "projects/:id", element: <ProjectDetails /> },

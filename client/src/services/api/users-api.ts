@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { UserProfile } from "../../types/user-profile";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -30,6 +31,13 @@ export const verifyAccount = async (token: string, data: VerifyAccountDto) => {
   const response = await axios.post(
     `${API_BASE_URL}/auth/verify-account?token=${token}`,
     data,
+  );
+  return response.data;
+};
+
+export const getUserProfile = async (id: number): Promise<UserProfile> => {
+  const response = await axios.get<UserProfile>(
+    `${API_BASE_URL}/users/profile/${id}`,
   );
   return response.data;
 };

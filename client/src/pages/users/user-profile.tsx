@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import PageCard from "../../components/page-card";
 import ProfileDataField from "../../components/profile-data-field";
 import type { UserProfile } from "../../types/user-profile";
+import { getUserProfile } from "../../services/api/users-api";
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
@@ -11,27 +12,11 @@ export default function UserProfile() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Replace with actual API call
-    // Simulating API call with mock data
     const fetchUser = async () => {
       setIsLoading(true);
       try {
-        // Mock data for demonstration
-        const mockUser: UserProfile = {
-          userId: Number(id),
-          firstName: "Bartosz",
-          lastName: "Waclawiak",
-          email: "bartosz.waclawiak@company.com",
-          phoneNumber: "+48 123 456 789",
-          birthDate: "10.03.2004",
-          address: "Sportowa 14, 50-139 Wrocław",
-          employeeSince: "20.11.2022",
-          lastModification: "11.04.2024",
-          branches: ["Wrocław"],
-          departments: ["Marketing", "IT"],
-          systemRoles: ["Admin", "Employee"],
-        };
-        setUser(mockUser);
+        const userData = await getUserProfile(Number(id));
+        setUser(userData);
       } catch (error) {
         console.error("Failed to fetch user:", error);
       } finally {
@@ -86,12 +71,19 @@ export default function UserProfile() {
           </h2>
           <div className="grid grid-cols-2 gap-6">
             <ProfileDataField label="Phone number" value={user.phoneNumber} />
-            <ProfileDataField label="Birth date" value={user.birthDate} />
+            <ProfileDataField
+              label="Birth date"
+              value={`${String(user.birthDay).padStart(2, "0")}.${String(user.birthMonth).padStart(2, "0")}.${user.birthYear}`}
+            />
           </div>
           <div className="mt-6">
             <ProfileDataField
               label="Residential address"
-              value={user.address}
+              value={
+                user.addressStreet
+                  ? `${user.addressStreet} ${user.addressNumber}${user.addressApartment ? "/" + user.addressApartment : ""}, ${user.addressPostalCode} ${user.addressCity}${user.addressState ? ", " + user.addressState : ""}, ${user.addressCountry}`
+                  : "No address provided"
+              }
             />
           </div>
         </div>
@@ -104,19 +96,48 @@ export default function UserProfile() {
           <div className="grid grid-cols-2 gap-6">
             <ProfileDataField
               label="Employee since"
-              value={user.employeeSince}
+              value={
+                user.employeeSince
+                  ? new Date(user.employeeSince).toLocaleDateString("pl-PL")
+                  : "N/A"
+              }
             />
             <ProfileDataField
               label="Last modification"
-              value={user.lastModification}
+              value={
+                user.lastModification
+                  ? new Date(user.lastModification).toLocaleDateString("pl-PL")
+                  : "N/A"
+              }
             />
           </div>
           <div className="grid grid-cols-2 gap-6 mt-6">
-            <ProfileDataField label="Branches" value={user.branches} />
-            <ProfileDataField label="Departments" value={user.departments} />
+            <ProfileDataField
+              label="Branches"
+              value={
+                user.branches.length > 0
+                  ? user.branches
+                  : "No branches assigned"
+              }
+            />
+            <ProfileDataField
+              label="Departments"
+              value={
+                user.departments.length > 0
+                  ? user.departments
+                  : "No departments assigned"
+              }
+            />
           </div>
           <div className="mt-6">
-            <ProfileDataField label="System roles" value={user.systemRoles} />
+            <ProfileDataField
+              label="System roles"
+              value={
+                user.systemRoles.length > 0
+                  ? user.systemRoles
+                  : "No system roles assigned"
+              }
+            />
           </div>
         </div>
 
