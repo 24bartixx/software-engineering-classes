@@ -5,6 +5,7 @@ import { Employee } from 'src/users/entities/employee.entity';
 import { HrEmployee } from 'src/users/entities/hr-employee.entity';
 import { ProjectManager } from 'src/users/entities/project-manager.entity';
 import { Administrator } from 'src/users/entities/administrator.entity';
+import { EmployeeDepartment } from 'src/employee-department/entities/employee-department.entity';
 import { Repository } from 'typeorm';
 import { CreateUserAuthDto } from './dtos/create-user-auth.dto';
 import { VerifyAccountDto } from './dtos/verify-account.dto';
@@ -25,18 +26,33 @@ export class AuthService {
     private projectManagerRepository: Repository<ProjectManager>,
     @InjectRepository(Administrator)
     private administratorRepository: Repository<Administrator>,
+    @InjectRepository(EmployeeDepartment)
+    private employeeDepartmentRepository: Repository<EmployeeDepartment>,
     private addressesService: AddressesService,
   ) {}
 
   private async createRoleRecords(
     userId: number,
     systemRole: SystemRole,
+    departmentIds?: number[],
   ): Promise<void> {
     const employee = this.employeeRepository.create({
       employed_at: new Date(),
       user_id: userId,
     });
     const savedEmployee = await this.employeeRepository.save(employee);
+
+    // Save employee-department relationships if department IDs are provided
+    if (departmentIds && departmentIds.length > 0) {
+      const employeeDepartments = departmentIds.map((departmentId) =>
+        this.employeeDepartmentRepository.create({
+          employeeId: savedEmployee.employee_id,
+          departmentId: departmentId,
+          startedAt: new Date(),
+        }),
+      );
+      await this.employeeDepartmentRepository.save(employeeDepartments);
+    }
 
     switch (systemRole) {
       case SystemRole.EMPLOYEE:
@@ -57,7 +73,6 @@ export class AuthService {
         break;
 
       case SystemRole.ADMIN:
-
         const adminHrEmployee = this.hrEmployeeRepository.create({
           employee_id: savedEmployee.employee_id,
         });
@@ -75,7 +90,7 @@ export class AuthService {
           project_manager_id: savedProjectManager.project_manager_id,
         });
         await this.administratorRepository.save(administrator);
-        
+
         break;
     }
   }
@@ -131,7 +146,11 @@ export class AuthService {
     });
     const savedUser = await this.usersRepository.save(newUser);
 
-    await this.createRoleRecords(savedUser.user_id, createUserDto.system_role);
+    await this.createRoleRecords(
+      savedUser.user_id,
+      createUserDto.system_role,
+      createUserDto.department_ids,
+    );
 
     return savedUser;
   }

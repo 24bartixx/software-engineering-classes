@@ -5,6 +5,8 @@ import {
   IsEnum,
   IsDateString,
   IsOptional,
+  IsArray,
+  IsNumber,
 } from 'class-validator';
 import { Gender } from 'src/common/gender.enum';
 import { SystemRole } from 'src/common/system-role.enum';
@@ -78,4 +80,14 @@ export class CreateUserAuthDto {
   @IsOptional()
   @IsString()
   apartment?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'List of department IDs to assign to the employee',
+    type: [Number],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  department_ids?: number[];
 }

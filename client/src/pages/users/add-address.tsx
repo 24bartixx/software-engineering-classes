@@ -5,16 +5,7 @@ import PageCard from "../../components/page-card";
 import CustomSelect, { type Option } from "../../components/custom-select";
 import CustomTextInput from "../../components/custom-text-input";
 import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
-
-export type Address = {
-  country: string;
-  state?: string;
-  postalCode: string;
-  city: string;
-  street: string;
-  houseNumber: string;
-  apartment?: string;
-};
+import type { Address } from "../../types/address";
 
 type Country = Option<string>;
 

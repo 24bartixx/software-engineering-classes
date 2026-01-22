@@ -14,30 +14,9 @@ import type { SystemRole } from "../../types/system-role";
 import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import type { Gender } from "../../types/gender";
 import { createAccount } from "../../services/api/users-api";
+import { getAllDepartments } from "../../services/api/departments-api";
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/outline";
-
-export type Address = {
-  country: string;
-  state?: string;
-  postalCode: string;
-  city: string;
-  street: string;
-  houseNumber: string;
-  apartment?: string;
-};
-
-const departmentOptions: Department[] = [
-  { value: "it", label: "IT" },
-  { value: "engineering", label: "Engineering" },
-  { value: "product", label: "Product" },
-  { value: "design", label: "Design" },
-  { value: "marketing", label: "Marketing" },
-  { value: "sales", label: "Sales" },
-  { value: "finance", label: "Finance" },
-  { value: "hr", label: "Human Resources" },
-  { value: "operations", label: "Operations" },
-  { value: "support", label: "Customer Support" },
-];
+import type { Address } from "../../types/address";
 
 const branchOptions: Branch[] = [
   { value: "warsaw-hq", label: "Warsaw (HQ)", isHq: true },
@@ -92,6 +71,9 @@ export default function AddNewUser() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [systemRole, setSystemRole] = useState<SystemRole | null>(null);
 
+  const [departmentOptions, setDepartmentOptions] = useState<Department[]>([]);
+  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
+
   const [error, setError] = useState("");
   const [fieldError, setFieldError] = useState<FieldKey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -110,6 +92,21 @@ export default function AddNewUser() {
       sessionStorage.removeItem("fromAddAddress");
     }
   }, [location]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        setIsLoadingDepartments(true);
+        const depts = await getAllDepartments();
+        setDepartmentOptions(depts);
+      } catch (err) {
+        console.error("Failed to fetch departments:", err);
+      } finally {
+        setIsLoadingDepartments(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,6 +170,9 @@ export default function AddNewUser() {
           street: address.street,
           number: address.houseNumber,
           apartment: address.apartment,
+        }),
+        ...(departments.length > 0 && {
+          department_ids: departments.map((d) => Number.parseInt(d.value)),
         }),
       });
 
