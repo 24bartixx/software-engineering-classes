@@ -1,4 +1,4 @@
-import {Inject, Injectable, NotFoundException} from '@nestjs/common';
+import {BadRequestException, Inject, Injectable, NotFoundException} from '@nestjs/common';
 import {BelbinQuestion} from "./entities/belbin-question.entity";
 import {LessThan, Repository} from "typeorm";
 import {InjectRepository} from "@nestjs/typeorm";
@@ -11,6 +11,7 @@ import {SystemConfigKeysEnum} from "src/common/enum/system-config-keys.enum";
 import {BelbinRolesMetadata} from "./entities/belbin-roles-metadata.entity";
 import {BelbinTestStatus, EmployeeTestStatusDto} from "./dto/employee-test-status.dto";
 import {Employee} from "src/employee/entities/employee.entity";
+import { EmailService } from "src/common/email.service";
 
 @Injectable()
 export class BelbinService {
@@ -24,7 +25,9 @@ export class BelbinService {
         @InjectRepository(Employee)
         private employeeRepository: Repository<Employee>,
         @Inject()
-        private systemConfigService: SystemConfigService
+        private systemConfigService: SystemConfigService,
+        @Inject()
+        private emailService: EmailService
     ) {}
 
     async getBelbinQuestions(): Promise<BelbinQuestion[]> {
@@ -110,6 +113,36 @@ export class BelbinService {
                 lastTestDate: lastTestDate,
             };
         });
+    }
+
+    async sendNotification(employeeId: number) {
+        const employee = await this.employeeRepository.findOne({
+            where: { id: employeeId },
+            relations: ['user', 'belbinTest'],
+        });
+        if (!employee) {
+            throw new NotFoundException(`Pracownik o ID ${employeeId} nie istnieje`);
+        }
+
+        const testValidityDays = await this.getTestValidityDays();
+        const now = new Date();
+        let testStatus: BelbinTestStatus = BelbinTestStatus.NOT_STARTED;
+        let testExpirationDate: Date = new Date();
+        if (employee.belbinTest) {
+            testExpirationDate = addDays(employee.belbinTest.performedAt, testValidityDays);
+            if (isBefore(testExpirationDate, now)) {
+                testStatus = BelbinTestStatus.EXPIRED;
+            } else {
+                testStatus = BelbinTestStatus.COMPLETED;
+            }
+        }
+
+        if (testStatus != BelbinTestStatus.EXPIRED) {
+            throw new BadRequestException(`Test pracownika o ID ${employeeId} nie jest przeterminowany`);
+        }
+
+        await this.emailService.sendExpiredTestNotification(employee.user.email, testExpirationDate.toLocaleDateString())
+        return { message: 'The notification about expired belbin test sent!' };
     }
 
     private async getTestValidityDays() {

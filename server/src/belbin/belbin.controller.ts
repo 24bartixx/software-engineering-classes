@@ -34,8 +34,8 @@ export class BelbinController {
 
     }
 
-    @Post('notify/:employeeId')
-    async sendNotification() {
-
+    @Post('notify-expired/:employeeId')
+    async sendNotification(@Param('employeeId', ParseIntPipe) employeeId: number) {
+        return this.belbinService.sendNotification(employeeId);
     }
 }
