@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 import { HrEmployee } from 'src/hr-employee/entities/hr-employee.entity';
-import { ProjectManager } from 'src/users/entities/project-manager.entity';
+import { ProjectManager } from 'src/project-managers/entities/project-manager.entity';
 
 @Injectable()
 export class AdministratorService {

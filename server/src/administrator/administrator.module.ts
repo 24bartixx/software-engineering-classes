@@ -4,7 +4,7 @@ import { AdministratorController } from './administrator.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Administrator } from './entities/administrator.entity';
 import { HrEmployee } from 'src/hr-employee/entities/hr-employee.entity';
-import { ProjectManager } from 'src/users/entities/project-manager.entity';
+import { ProjectManager } from 'src/project-managers/entities/project-manager.entity';
 
 @Module({
   imports: [

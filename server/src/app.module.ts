@@ -14,6 +14,7 @@ import { EmployeeDepartmentModule } from './employee-department/employee-departm
 import { BranchesModule } from './branches/branches.module';
 import { HrEmployeeModule } from './hr-employee/hr-employee.module';
 import { AdministratorModule } from './administrator/administrator.module';
+import { ProjectManagerModule } from './project-managers/project-manager.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AdministratorModule } from './administrator/administrator.module';
     UsersModule,
     EmployeeModule,
     HrEmployeeModule,
+    ProjectManagerModule,
     AdministratorModule,
     DepartmentModule,
     EmployeeDepartmentModule,

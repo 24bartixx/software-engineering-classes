@@ -4,12 +4,12 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Employee } from '../employee/entities/employee.entity';
 import { HrEmployee } from '../hr-employee/entities/hr-employee.entity';
-import { ProjectManager } from './entities/project-manager.entity';
 import { EmployeeDepartment } from '../employee-department/entities/employee-department.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { Administrator } from 'src/administrator/entities/administrator.entity';
+import { ProjectManager } from 'src/project-managers/entities/project-manager.entity';
 
 @Injectable()
 export class UsersService {

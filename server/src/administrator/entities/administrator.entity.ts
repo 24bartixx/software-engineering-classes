@@ -6,7 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { HrEmployee } from '../../hr-employee/entities/hr-employee.entity';
-import { ProjectManager } from '../../users/entities/project-manager.entity';
+import { ProjectManager } from '../../project-managers/entities/project-manager.entity';
 
 @Entity()
 export class Administrator {
