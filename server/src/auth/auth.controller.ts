@@ -3,6 +3,8 @@ import {
   Controller,
   HttpException,
   HttpStatus,
+  Param,
+  ParseIntPipe,
   Post,
   Query,
 } from '@nestjs/common';
@@ -11,6 +13,7 @@ import { AuthService } from './auth.service';
 import * as jwt from 'jsonwebtoken';
 import { CreateUserAuthDto } from './dtos/create-user-auth.dto';
 import { VerifyAccountDto } from './dtos/verify-account.dto';
+import { EditUserAuthDto } from './dtos/edit-user-auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -71,5 +74,14 @@ export class AuthController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  @Post('edit-user/:id')
+  async editUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() editUserAuthDto: EditUserAuthDto,
+  ) {
+    await this.authService.editUser(id, editUserAuthDto);
+    return { message: 'User updated successfully!' };
   }
 }
