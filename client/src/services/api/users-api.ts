@@ -10,7 +10,14 @@ export interface CreateAccountDto {
   gender: "Male" | "Female" | "Other";
   phone_number: string;
   birthday_date: string;
-  address_id?: number;
+  system_role: string;
+  country?: string;
+  state?: string;
+  postal_code?: string;
+  city?: string;
+  street?: string;
+  number?: string;
+  apartment?: string;
 }
 
 export interface VerifyAccountDto {

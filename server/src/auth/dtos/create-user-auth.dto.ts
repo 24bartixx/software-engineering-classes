@@ -7,6 +7,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Gender } from 'src/common/gender.enum';
+import { SystemRole } from 'src/common/system-role.enum';
 
 export class CreateUserAuthDto {
   @ApiProperty({ description: 'First name of the user' })
@@ -55,6 +56,10 @@ export class CreateUserAuthDto {
   @IsOptional()
   @IsString()
   city?: string;
+
+  @ApiProperty({ enum: SystemRole, description: 'System role of the user' })
+  @IsEnum(SystemRole)
+  system_role: SystemRole;
 
   @ApiProperty({ required: false, description: 'Street name of the address' })
   @IsOptional()

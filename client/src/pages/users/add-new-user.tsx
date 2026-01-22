@@ -164,6 +164,16 @@ export default function AddNewUser() {
         gender: genderValue,
         phone_number: `${phoneDial}${phoneNumber}`,
         birthday_date: birthDate,
+        system_role: systemRole.value,
+        ...(address && {
+          country: address.country,
+          state: address.state,
+          postal_code: address.postalCode,
+          city: address.city,
+          street: address.street,
+          number: address.houseNumber,
+          apartment: address.apartment,
+        }),
       });
 
       console.log("Account creation response:", response);

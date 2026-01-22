@@ -1,19 +1,84 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { Employee } from 'src/users/entities/employee.entity';
+import { HrEmployee } from 'src/users/entities/hr-employee.entity';
+import { ProjectManager } from 'src/users/entities/project-manager.entity';
+import { Administrator } from 'src/users/entities/administrator.entity';
 import { Repository } from 'typeorm';
 import { CreateUserAuthDto } from './dtos/create-user-auth.dto';
 import { VerifyAccountDto } from './dtos/verify-account.dto';
 import { AddressesService } from 'src/addresses/addresses.service';
 import { CreateAddressDto } from 'src/addresses/dto/create-address.dto';
+import { SystemRole } from 'src/common/system-role.enum';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Employee)
+    private employeeRepository: Repository<Employee>,
+    @InjectRepository(HrEmployee)
+    private hrEmployeeRepository: Repository<HrEmployee>,
+    @InjectRepository(ProjectManager)
+    private projectManagerRepository: Repository<ProjectManager>,
+    @InjectRepository(Administrator)
+    private administratorRepository: Repository<Administrator>,
     private addressesService: AddressesService,
   ) {}
+
+  private async createRoleRecords(
+    userId: number,
+    systemRole: SystemRole,
+  ): Promise<void> {
+    const employee = this.employeeRepository.create({
+      employed_at: new Date(),
+      user_id: userId,
+    });
+    const savedEmployee = await this.employeeRepository.save(employee);
+
+    switch (systemRole) {
+      case SystemRole.EMPLOYEE:
+        break;
+
+      case SystemRole.HR_EMPLOYEE:
+        const hrEmployee = this.hrEmployeeRepository.create({
+          employee_id: savedEmployee.employee_id,
+        });
+        await this.hrEmployeeRepository.save(hrEmployee);
+        break;
+
+      case SystemRole.PROJECT_MANAGER:
+        const projectManager = this.projectManagerRepository.create({
+          employee_id: savedEmployee.employee_id,
+        });
+        await this.projectManagerRepository.save(projectManager);
+        break;
+
+      case SystemRole.ADMIN:
+
+        const adminHrEmployee = this.hrEmployeeRepository.create({
+          employee_id: savedEmployee.employee_id,
+        });
+        const savedHrEmployee =
+          await this.hrEmployeeRepository.save(adminHrEmployee);
+
+        const adminProjectManager = this.projectManagerRepository.create({
+          employee_id: savedEmployee.employee_id,
+        });
+        const savedProjectManager =
+          await this.projectManagerRepository.save(adminProjectManager);
+
+        const administrator = this.administratorRepository.create({
+          hr_employee_id: savedHrEmployee.hr_employee_id,
+          project_manager_id: savedProjectManager.project_manager_id,
+        });
+        await this.administratorRepository.save(administrator);
+        
+        break;
+    }
+  }
 
   async createAccount(
     createUserDto: CreateUserAuthDto,
@@ -64,7 +129,11 @@ export class AuthService {
       modified_at: new Date(),
       address_id: addressId,
     });
-    return await this.usersRepository.save(newUser);
+    const savedUser = await this.usersRepository.save(newUser);
+
+    await this.createRoleRecords(savedUser.user_id, createUserDto.system_role);
+
+    return savedUser;
   }
 
   async verifyAccount(
