@@ -7,7 +7,7 @@ import {
   IsNumber,
   IsOptional,
 } from 'class-validator';
-import { Gender } from 'src/common/gender.enum';
+import { Gender } from 'src/common/enum/gender.enum';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'First name of the user' })

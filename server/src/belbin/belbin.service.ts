@@ -7,7 +7,7 @@ import {ExpiredBelbinTestDto} from "./dto/expired-belbin-test.dto";
 import {BelbinCategoryResult, EmployeeBelbinResultDto} from "./dto/employee-belbin-result.dto";
 import {SystemConfigService} from "src/system-config/system-config.service";
 import {BelbinTest} from "./entities/belbin-test.entity";
-import {SystemConfigKeysEnum} from "src/common/system-config-keys.enum";
+import {SystemConfigKeysEnum} from "src/common/enum/system-config-keys.enum";
 import {BelbinRolesMetadata} from "./entities/belbin-roles-metadata.entity";
 import {BelbinTestStatus, EmployeeTestStatusDto} from "./dto/employee-test-status.dto";
 import {Employee} from "src/employee/entities/employee.entity";

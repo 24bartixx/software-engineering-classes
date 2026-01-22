@@ -8,8 +8,8 @@ import { HrEmployee } from 'src/users/entities/hr-employee.entity';
 import { ProjectManager } from 'src/users/entities/project-manager.entity';
 import { Administrator } from 'src/users/entities/administrator.entity';
 import { EmployeeDepartment } from 'src/employee-department/entities/employee-department.entity';
-import { EmailService } from './email.service';
 import { AddressesModule } from 'src/addresses/addresses.module';
+import { EmailService } from "src/common/email.service";
 
 @Module({
   imports: [

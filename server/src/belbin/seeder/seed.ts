@@ -6,7 +6,7 @@ import { EmployeeDepartment } from '../../employee-department/entities/employee-
 import { BelbinTest } from '../entities/belbin-test.entity';
 import { Address } from 'src/addresses/entities/address.entity';
 import { SystemConfigService } from 'src/system-config/system-config.service';
-import { SystemConfigKeysEnum } from "src/common/system-config-keys.enum";
+import { SystemConfigKeysEnum } from "src/common/enum/system-config-keys.enum";
 
 const employeesData = [
   {

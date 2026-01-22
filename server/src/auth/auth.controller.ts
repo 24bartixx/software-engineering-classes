@@ -6,8 +6,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { EmailService } from 'src/auth/email.service';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { EmailService } from 'src/common/email.service';
 import { AuthService } from './auth.service';
 import * as jwt from 'jsonwebtoken';
 import { CreateUserAuthDto } from './dtos/create-user-auth.dto';
@@ -27,7 +26,7 @@ export class AuthController {
       expiresIn: '3m',
     });
 
-    this.authService.createAccount(createUserDto, token);
+    await this.authService.createAccount(createUserDto, token);
 
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173/';
     await this.emailService.sendActivationEmail(

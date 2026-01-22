@@ -8,8 +8,8 @@ import {
   IsArray,
   IsNumber,
 } from 'class-validator';
-import { Gender } from 'src/common/gender.enum';
-import { SystemRole } from 'src/common/system-role.enum';
+import { Gender } from 'src/common/enum/gender.enum';
+import { SystemRole } from 'src/common/enum/system-role.enum';
 
 export class CreateUserAuthDto {
   @ApiProperty({ description: 'First name of the user' })

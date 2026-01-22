@@ -11,7 +11,7 @@ import { CreateUserAuthDto } from './dtos/create-user-auth.dto';
 import { VerifyAccountDto } from './dtos/verify-account.dto';
 import { AddressesService } from 'src/addresses/addresses.service';
 import { CreateAddressDto } from 'src/addresses/dto/create-address.dto';
-import { SystemRole } from 'src/common/system-role.enum';
+import { SystemRole } from 'src/common/enum/system-role.enum';
 
 @Injectable()
 export class AuthService {

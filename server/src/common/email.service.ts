@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
@@ -28,6 +28,7 @@ export class EmailService {
       console.log('Activation email sent!');
     } catch (error) {
       console.error('Error sending email:', error);
+      throw new Error('Internal error sending email: ', error);
     }
   }
 }
