@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import PageCard from '../../components/page-card';
 import { getEmployeesTestInfo } from "../../services/api/belbin-api";
 import { BelbinTestStatus, type EmployeeBelbinTestStatus } from "../../types/belbin";
+import PageLoader from "../../components/page-loader";
+import ErrorState from "../../components/error-state";
+import BackButton from "../../components/back-button";
 
 type StatusConfig = {
     icon: React.ReactNode;
@@ -128,31 +131,9 @@ export default function BelbinDashboard() {
         );
     };
 
-    if (isLoading) {
-        return (
-            <PageCard>
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-                    <p className="text-gray-500 font-medium">Ładowanie danych o pracownikach...</p>
-                </div>
-            </PageCard>
-        );
-    }
-
+    if (isLoading) return <PageLoader message='Ładowanie danych o pracownikach...'/>;
     if (employees.length === 0) {
-        return (
-            <PageCard>
-                <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                    <div className="text-lg text-black/60">Brak danych o pracownikach. Skontaktuj się z administratorem.</div>
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="px-6 h-11 rounded-xl border-2 border-black bg-white text-black hover:bg-gray-50 active:scale-[0.99]"
-                    >
-                        Powrót
-                    </button>
-                </div>
-            </PageCard>
-        );
+        return <ErrorState title="Brak danych" description="Nie znaleziono danych o pracownikach w systemie."/>;
     }
 
     return (
@@ -167,21 +148,7 @@ export default function BelbinDashboard() {
                             </div>
 
                             <div className="flex flex-col items-end">
-                                <button
-                                    onClick={() => navigate(-1)}
-                                    className="text-sm mb-4 text-gray-500 hover:text-gray-800 flex items-center transition-colors group">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 -2 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-4 h-4 mr-2 text-gray-400 group-hover:text-gray-800 transition-colors"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                                    </svg>
-                                    Powrót do strony głównej
-                                </button>
+                                <BackButton label='Powrót do strony głównej'/>
                                 <div className="mt-4 sm:mt-0 flex items-center bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
                                     <span className="text-xs font-semibold text-gray-500 mr-2 uppercase tracking-wide">Widok:</span>
                                     <select

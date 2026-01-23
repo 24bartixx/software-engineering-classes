@@ -1,13 +1,15 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import PageCard from '../../components/page-card';
 import BelbinReportBody from '../../components/belbin-results-body';
 import {useEffect, useState } from "react";
 import type { EmployeeBelbinResult } from "../../types/belbin";
 import {getTestResults} from "../../services/api/belbin-api";
+import PageLoader from "../../components/page-loader";
+import ErrorState from "../../components/error-state";
+import BackButton from "../../components/back-button";
 
 export default function UserBelbinResults() {
     const { employeeId } = useParams<{ employeeId: string }>();
-    const navigate = useNavigate();
 
     const [data, setData] = useState<EmployeeBelbinResult | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -38,47 +40,14 @@ export default function UserBelbinResults() {
         fetchResults();
     }, [employeeId]);
 
-    if (isLoading) {
-        return (
-            <PageCard>
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-                    <p className="text-gray-500 font-medium">Ładowanie wyników...</p>
-                </div>
-            </PageCard>
-        );
-    }
-
+    if (isLoading) return <PageLoader/>
     if (error || !data) {
-        return (
-            <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-start py-8">
-                <div className="w-full max-w-3xl">
-                    <PageCard>
-                        <div className="p-8 text-center">
-                            <div className="bg-red-50 text-red-600 p-4 rounded-lg inline-block mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                                </svg>
-                            </div>
-                            <h2 className="text-xl font-bold text-gray-900 mb-2">Nie można wyświetlić wyników</h2>
-                            <p className="text-gray-600 mb-6">{error}</p>
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors"
-                            >
-                                Wróć do panelu
-                            </button>
-                        </div>
-                    </PageCard>
-                </div>
-            </div>
-        );
+        return <ErrorState title='Nie można wyświetlić wyników' description={error || 'Nie znaleziono danych.'} backLabel='Powrót do profilu'/>;
     }
 
     const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
     const topRoleName = sortedResults[0]?.name.split(' (')[0] || 'Nieokreślony';
     const lastRoleName = sortedResults[sortedResults.length - 1]?.name.split(' (')[0] || 'Nieokreślony';
-
     const formattedDate = new Date(data.testDate).toLocaleDateString();
 
     return (
@@ -87,22 +56,7 @@ export default function UserBelbinResults() {
                 <PageCard>
                     <div className="p-6">
                         <div className="mb-8">
-                            <button
-                                onClick={() => navigate("/belbin/dashboard")}
-                                className="text-sm text-gray-500 hover:text-gray-800 mb-8 flex items-center transition-colors"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 -1 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="w-4 h-4 mr-2 text-gray-400 group-hover:text-gray-800 transition-colors"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                                </svg>
-                                Powrót do profilu
-                            </button>
+                            <BackButton label='Powrót do profilu'/>
                             <h1 className="text-2xl font-bold text-gray-900 mb-1">Twoje Role Zespołowe Belbina</h1>
                             <p className="text-sm text-gray-400">{data.firstName} {data.lastName}</p>
                             {<p className="text-sm text-gray-400">Test wykonano: {formattedDate}</p>}
@@ -138,7 +92,6 @@ export default function UserBelbinResults() {
                                 </ul>
                             </div>
                         </div>
-
                     </div>
                 </PageCard>
             </div>

@@ -4,18 +4,20 @@ import PageCard from '../../components/page-card';
 import type { BelbinQuestion } from "../../types/belbin";
 import {getBelbinQuestions, sendBelbinTestAnswers} from "../../services/api/belbin-api";
 import ToastNotification from "../../components/toast-notification";
+import {useToast} from "../../hooks/use-toast";
+import PageLoader from "../../components/page-loader";
+import ErrorState from "../../components/error-state";
 
 export default function DoBelbinTest() {
     const { employeeId } = useParams<{ employeeId: string }>();
+    const navigate = useNavigate();
+    const { notifications, addNotification, removeNotification } = useToast();
 
     const [questions, setQuestions] = useState<BelbinQuestion[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [answers, setAnswers] = useState<Record<string, number>>({});
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
-
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchBelbinQuestions = async () => {
@@ -25,7 +27,7 @@ export default function DoBelbinTest() {
                 setQuestions(belbinQuestions);
             } catch (error) {
                 console.error('Failed to fetch belbin questions: ', error);
-                setToast({ type: 'error', message: "Nie udało się pobrać pytań." });
+                addNotification('error', "Nie udało się pobrać pytań z serwera.");
             } finally {
                 setIsLoading(false);
             }
@@ -34,11 +36,9 @@ export default function DoBelbinTest() {
     }, []);
 
     const currentSection = questions[currentSectionIndex];
-
     const pointsUsed = currentSection?.statements.reduce((sum, statement) => {
         return sum + (answers[statement.id] || 0);
     }, 0) || 0;
-
     const pointsLeft = 10 - pointsUsed;
 
     const handleInputChange = (statementId: string, value: string) => {
@@ -53,75 +53,50 @@ export default function DoBelbinTest() {
 
     const handleNext = async () => {
         if (pointsUsed !== 10) {
-            setToast({ type: 'error', message: "Musisz rozdzielić dokładnie 10 punktów!" });
+            addNotification('error', "Musisz rozdzielić dokładnie 10 punktów!");
             return;
         }
         if (currentSectionIndex < questions.length - 1) {
             setCurrentSectionIndex(prev => prev + 1);
             window.scroll(0, 0);
-            setToast(null);
         } else {
             await submitTest();
         }
     };
 
+    const handleBack = () => {
+        if (currentSectionIndex > 0) {
+            setCurrentSectionIndex(prev => prev - 1);
+        }
+    };
+
     const submitTest = async () => {
         if (!employeeId) {
-            setToast({ message: "Błąd: Brak identyfikatora pracownika.", type: 'error' });
+            addNotification('error', `Błąd: Brak ID pracownika: ${employeeId}.`);
             return;
         }
-
         setIsSubmitting(true);
-        setToast(null);
-
         try {
             await sendBelbinTestAnswers(Number(employeeId), answers);
-            setToast({ message: "Test zakończony pomyślnie! Przekierowywanie...", type: 'success' });
+            addNotification('success', "Test zakończony pomyślnie! Przekierowywanie...");
             setTimeout(() => navigate(`/belbin/results/${employeeId}`), 2000);
         } catch (error: any) {
             console.error("Błąd przy zapisywaniu wynikow testu: ", error);
-            const errorResponse = error.response?.data?.message;
-            const userMessage = Array.isArray(errorResponse)
-                ? errorResponse[0] : (errorResponse || "Wystąpił błąd zapisu wyników testu.");
-            setToast({ message: userMessage, type: 'error' });
+            const msg = error.response?.data?.message || "Błąd zapisu wyników testu.";
+            addNotification('error', Array.isArray(msg) ? msg[0] : msg);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (isLoading) {
-        return (
-            <PageCard>
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-                    <p className="text-gray-500 font-medium">Ładowanie pytań...</p>
-                </div>
-            </PageCard>
-        );
-    }
-
+    if (isLoading) return <PageLoader message='Ładowanie pytań...'/>
     if (questions.length === 0) {
-        return (
-            <PageCard>
-                <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                    <div className="text-lg text-black/60">Brak dostępnych pytań. Skontaktuj się z administratorem.</div>
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="px-6 h-11 rounded-xl border-2 border-black bg-white text-black hover:bg-gray-50 active:scale-[0.99]"
-                    >
-                        Powrót
-                    </button>
-                </div>
-            </PageCard>
-        );
+        return <ErrorState title="Brak dostępnych pytań" description="Nie udało się załadować pytań do testu." />;
     }
 
     return (
         <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-center py-8 font-sans">
-            <ToastNotification
-                notifications={toast ? [{ id: 1, ...toast }] : []}
-                removeNotification={() => setToast(null)}
-            />
+            <ToastNotification notifications={notifications} removeNotification={removeNotification}/>
             <div className="w-full max-w-3xl">
                 <PageCard>
                     <div className="p-6">
@@ -130,10 +105,7 @@ export default function DoBelbinTest() {
                                 <h1 className="text-2xl font-bold text-gray-900 mb-1 text-left">Test Ról Zespołowych Belbina</h1>
                                 <div className="text-gray-500 text-sm text-left">Pytanie {currentSectionIndex + 1} z {questions.length}</div>
                             </div>
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="text-gray-400 text-sm hover:text-gray-600"
-                            >
+                            <button onClick={() => navigate(-1)} className="text-gray-400 text-sm hover:text-gray-600">
                                 Anuluj test
                             </button>
                         </div>
@@ -187,10 +159,7 @@ export default function DoBelbinTest() {
                             <button
                                 className="w-32 py-2.5 text-sm font-medium text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-200 transition-all flex justify-center items-center gap-2"
                                 disabled={currentSectionIndex === 0 || isSubmitting}
-                                onClick={() => {
-                                    setCurrentSectionIndex(i => i - 1);
-                                    setToast(null);
-                                }}
+                                onClick={handleBack}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 -2 24 24" strokeWidth={3} stroke="currentColor" className="w-3 h-3">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />

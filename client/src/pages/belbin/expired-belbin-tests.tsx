@@ -1,28 +1,21 @@
 import {useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageCard from '../../components/page-card';
-import ToastNotification, { type Notification, type NotificationType } from '../../components/toast-notification';
+import ToastNotification from '../../components/toast-notification';
 import type { ExpiredBelbinTest } from "../../types/belbin";
 import { getExpiredBelbinTests, sendReminderNotification } from "../../services/api/belbin-api";
+import PageLoader from "../../components/page-loader";
+import {useToast} from "../../hooks/use-toast";
+import BackButton from "../../components/back-button";
 
 export default function ExpiredTestsView() {
     const navigate = useNavigate();
+    const { notifications, addNotification, removeNotification } = useToast();
 
     const [expiredTests, setExpiredTests] = useState<ExpiredBelbinTest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sendingMap, setSendingMap] = useState<Record<number, boolean>>({});
     const [remindedUserIds, setRemindedUserIds] = useState<Set<number>>(new Set());
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-
-    const addNotification = (type: NotificationType, message: string) => {
-        const id = Date.now();
-        setNotifications((prev) => [...prev, { id, type, message }]);
-        setTimeout(() => removeNotification(id), 5000);
-    };
-
-    const removeNotification = (id: number) => {
-        setNotifications((prev) => prev.filter((n) => n.id !== id));
-    };
 
     const formatDate = (date: Date) => new Date(date).toLocaleDateString();
 
@@ -50,7 +43,7 @@ export default function ExpiredTestsView() {
             setRemindedUserIds(prev => new Set(prev).add(test.employeeId));
         } catch (error: any) {
             console.error('Błąd wysyłania powiadomienia:', error);
-            const msg = error.response?.data?.message || `Wystąpił błąd podczas wysyłania powiadomienia do pracownika ${test.firstName} ${test.lastName}.`;
+            const msg = error.response?.data?.message || `Błąd podczas wysyłania powiadomienia do pracownika ${test.firstName} ${test.lastName}.`;
             addNotification('error', Array.isArray(msg) ? msg[0] : msg);
         } finally {
             setSendingMap(prev => ({ ...prev, [test.employeeId]: false }));
@@ -61,16 +54,7 @@ export default function ExpiredTestsView() {
         navigate(`/hr/belbin/results/${employeeId}`);
     };
 
-    if (isLoading) {
-        return (
-            <PageCard>
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-                    <p className="text-gray-500 font-medium">Ładowanie wyników...</p>
-                </div>
-            </PageCard>
-        );
-    }
+    if (isLoading) return <PageLoader/>
 
     return (
         <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-start py-12 font-sans relative">
@@ -88,22 +72,10 @@ export default function ExpiredTestsView() {
                                 <h1 className="text-2xl font-bold text-gray-900">Przeterminowane Testy Belbina</h1>
                             </div>
 
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="text-sm text-gray-500 hover:text-gray-800 flex items-center transition-colors group"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 -2 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="w-4 h-4 mr-2 text-gray-400 group-hover:text-gray-800 transition-colors"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                                </svg>
-                                Powrót do strony głównej
-                            </button>
+                            <BackButton
+                                label="Powrót do strony głównej"
+                                onClick={() => navigate('/')}
+                            />
                         </div>
 
                         <div className="overflow-x-auto">

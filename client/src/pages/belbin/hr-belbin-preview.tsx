@@ -1,31 +1,24 @@
 import {useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import PageCard from '../../components/page-card';
 import BelbinResultsBody from '../../components/belbin-results-body';
-import ToastNotification, {type Notification, type NotificationType} from "../../components/toast-notification";
+import ToastNotification from "../../components/toast-notification";
 import type { EmployeeBelbinResult } from "../../types/belbin";
 import {getTestResults, sendReminderNotification} from "../../services/api/belbin-api";
+import { useToast } from "../../hooks/use-toast";
+import PageLoader from "../../components/page-loader";
+import ErrorState from "../../components/error-state";
+import BackButton from "../../components/back-button";
 
 export default function ManagerBelbinPreview() {
     const { employeeId } = useParams<{ employeeId: string }>();
-    const navigate = useNavigate();
+    const { notifications, addNotification, removeNotification } = useToast();
 
     const [data, setData] = useState<EmployeeBelbinResult | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSending, setIsSending] = useState(false);
     const [reminderSent, setReminderSent] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-
-    const addNotification = (type: NotificationType, message: string) => {
-        const id = Date.now();
-        setNotifications((prev) => [...prev, { id, type, message }]);
-        setTimeout(() => removeNotification(id), 5000);
-    };
-
-    const removeNotification = (id: number) => {
-        setNotifications((prev) => prev.filter((n) => n.id !== id));
-    };
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -54,52 +47,24 @@ export default function ManagerBelbinPreview() {
 
     const handleSendReminder = async () => {
         if (!employeeId) return;
-
         setIsSending(true);
+
         try {
             await sendReminderNotification(Number(employeeId));
             addNotification('success', `Wysłano pomyślnie powiadomienie do pracownika ${employeeName}.`);
             setReminderSent(true);
         } catch (error: any) {
             console.error("Błąd wysyłania przypomnienia:", error);
-            const msg = error.response?.data?.message || `Wystąpił błąd podczas wysyłania powiadomienia do pracownika ${employeeName}.`;
+            const msg = error.response?.data?.message || `Błąd podczas wysyłania powiadomienia do pracownika ${employeeName}.`;
             addNotification('error', Array.isArray(msg) ? msg[0] : msg);
         } finally {
             setIsSending(false);
         }
     };
 
-    if (isLoading) {
-        return (
-            <PageCard>
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-                    <p className="text-gray-500 font-medium">Ładowanie wyników...</p>
-                </div>
-            </PageCard>
-        );
-    }
-
+    if (isLoading) return <PageLoader/>
     if (error || !data) {
-        return (
-            <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-start py-8">
-                <ToastNotification notifications={notifications} removeNotification={removeNotification} />
-                <div className="w-full max-w-3xl">
-                    <PageCard>
-                        <div className="p-8 text-center">
-                            <h2 className="text-xl font-bold text-gray-900 mb-2">Błąd podglądu</h2>
-                            <p className="text-gray-600 mb-6">{error || "Nie znaleziono danych."}</p>
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                            >
-                                Wróć
-                            </button>
-                        </div>
-                    </PageCard>
-                </div>
-            </div>
-        );
+        return <ErrorState title='Błąd podglądu' description={error || 'Nie znaleziono danych.'} backLabel='Powrót do listy'/>;
     }
 
     const employeeName = `${data.firstName} ${data.lastName}`;
@@ -112,15 +77,7 @@ export default function ManagerBelbinPreview() {
                 <PageCard>
                     <div className="p-6">
                         <div className="mb-8">
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="text-sm text-gray-500 hover:text-gray-800 mb-8 flex items-center transition-colors group"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 -1 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 text-gray-400 group-hover:text-gray-800">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                                </svg>
-                                Powrót
-                            </button>
+                            <BackButton label="Powrót do listy" />
                             <h1 className="text-2xl font-bold text-gray-900 mb-1">
                                 Role zespołowe pracownika <span className="text-slate-700">{employeeName}</span>
                             </h1>
