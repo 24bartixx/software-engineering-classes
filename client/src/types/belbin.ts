@@ -11,12 +11,25 @@ export type BelbinResult = {
 
 export type BelbinQuestion = {
     id: number;
-    title: string;
+    content: string;
     statements: {
         id: string;
         text: string;
-        relatedRole: BelbinRole;
+        relatedRoleFieldName: string;
     }[];
+}
+
+export enum BelbinTestStatus {
+    NOT_STARTED = 'not_started',
+    COMPLETED = 'completed',
+    EXPIRED = 'expired',
+}
+
+export type EmployeeBelbinTestStatus = {
+    id: number;
+    name: string;
+    status: BelbinTestStatus;
+    lastTestDate: Date | null;
 }
 
 export type ExpiredBelbinTest = {

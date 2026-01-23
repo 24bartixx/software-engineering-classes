@@ -1,43 +1,61 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import PageCard from '../../components/page-card';
-
-const MOCKED_USERS = [
-    {
-        id: 1,
-        name: "Jan Kowalski",
-        status: "not_started",
-        lastTestDate: null
-    },
-    {
-        id: 2,
-        name: "Anna Nowak",
-        status: "completed",
-        lastTestDate: "15.11.2025"
-    },
-    {
-        id: 3,
-        name: "Piotr Wiśniewski",
-        status: "expired",
-        lastTestDate: "15.03.2024"
-    }
-];
+import { getEmployeesTestInfo } from "../../services/api/belbin-api";
+import { BelbinTestStatus, type EmployeeBelbinTestStatus } from "../../types/belbin";
 
 type StatusConfig = {
     icon: React.ReactNode;
     iconContainerClass: string;
     text: React.ReactNode;
     buttonLabel: string;
+    onButtonClick: () => void;
 };
 
-export default function BelbinDashboard() {
-    const [selectedUserId, setSelectedUserId] = useState(MOCKED_USERS[0].id);
+const SELECTED_EMPLOYEE_ID = "belbin_dashboard_selected_employee_id";
 
-    const currentUser = MOCKED_USERS.find(u => u.id === selectedUserId) || MOCKED_USERS[0];
+export default function BelbinDashboard() {
+    const [employees, setEmployees] = useState<EmployeeBelbinTestStatus[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(() => {
+        const saved = sessionStorage.getItem(SELECTED_EMPLOYEE_ID);
+        return saved ? Number(saved) : null;
+    });
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            try {
+                setIsLoading(true);
+                const employeesTestInfo = await getEmployeesTestInfo();
+                setEmployees(employeesTestInfo);
+
+                if (employeesTestInfo.length > 0 && !selectedUserId) {
+                    const firstId = employeesTestInfo[0].id;
+                    setSelectedUserId(firstId);
+                    sessionStorage.setItem(SELECTED_EMPLOYEE_ID, String(firstId));
+                }
+            } catch (error) {
+                console.error('Failed to fetch employees test info data: ', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchEmployees();
+    }, [selectedUserId]);
+
+    const currentUser = employees.find(u => u.id === selectedUserId) || employees[0];
+
+    const formatDate = (date: Date | string | null) => {
+        if (!date) return 'Brak';
+        return new Date(date).toLocaleDateString();
+    };
 
     const renderTestStatusContent = () => {
         let config: StatusConfig;
         switch (currentUser.status) {
-            case 'completed':
+            case BelbinTestStatus.COMPLETED:
                 config = {
                     icon: (
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-emerald-600">
@@ -47,14 +65,15 @@ export default function BelbinDashboard() {
                     iconContainerClass: "border-emerald-500",
                     text: (
                         <>
-                            Ostatni test wykonano <span className="font-semibold text-gray-900">{currentUser.lastTestDate}</span>. Twoje wyniki są aktualne.
+                            Ostatni test wykonano <span className="font-semibold text-gray-900">{formatDate(currentUser.lastTestDate)}</span>. Twoje wyniki są aktualne.
                         </>
                     ),
-                    buttonLabel: "Zobacz wyniki"
+                    buttonLabel: "Zobacz wyniki",
+                    onButtonClick: () => navigate(`/belbin/results/${currentUser.id}`)
                 };
                 break;
 
-            case 'expired':
+            case BelbinTestStatus.EXPIRED:
                 config = {
                     icon: (
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3 text-orange-500">
@@ -64,15 +83,16 @@ export default function BelbinDashboard() {
                     iconContainerClass: "border-orange-400",
                     text: (
                         <>
-                            Twój ostatni test wykonano <span className="font-semibold text-gray-900">{currentUser.lastTestDate}</span>.<br />
+                            Twój ostatni test wykonano <span className="font-semibold text-gray-900">{formatDate(currentUser.lastTestDate)}</span>.<br />
                             Zaktualizuj swoje wyniki, aby mieć aktualne informacje o swoich rolach zespołowych.
                         </>
                     ),
-                    buttonLabel: "Rozpocznij ponownie"
+                    buttonLabel: "Rozpocznij ponownie",
+                    onButtonClick: () => navigate(`/belbin/test/${currentUser.id}`)
                 };
                 break;
 
-            case 'not_started':
+            case BelbinTestStatus.NOT_STARTED:
             default:
                 config = {
                     icon: (
@@ -80,9 +100,10 @@ export default function BelbinDashboard() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                         </svg>
                     ),
-                    iconContainerClass: "border-transparent", // Brak widocznego borderu, ale zachowujemy układ
+                    iconContainerClass: "border-transparent",
                     text: "Nie masz jeszcze wykonanego testu Belbina. Poznaj swoje role zespołowe i dowiedz się, jak możesz najlepiej funkcjonować w zespole.",
-                    buttonLabel: "Rozpocznij test"
+                    buttonLabel: "Rozpocznij test",
+                    onButtonClick: () => navigate(`/belbin/test/${currentUser.id}`)
                 };
                 break;
         }
@@ -97,12 +118,41 @@ export default function BelbinDashboard() {
                         {config.text}
                     </div>
                 </div>
-                <button className="px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors">
+                <button
+                    onClick={config.onButtonClick}
+                    className="px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+                >
                     {config.buttonLabel}
                 </button>
             </>
         );
     };
+
+    if (isLoading) {
+        return (
+            <PageCard>
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <div className="text-lg text-black/60">Ładowanie danych o pracownikach...</div>
+                </div>
+            </PageCard>
+        );
+    }
+
+    if (employees.length === 0) {
+        return (
+            <PageCard>
+                <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                    <div className="text-lg text-black/60">Brak danych o pracownikach. Skontaktuj się z administratorem.</div>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="px-6 h-11 rounded-xl border-2 border-black bg-white text-black hover:bg-gray-50 active:scale-[0.99]"
+                    >
+                        Powrót
+                    </button>
+                </div>
+            </PageCard>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-center py-8 font-sans">
@@ -115,19 +165,40 @@ export default function BelbinDashboard() {
                                 <p className="text-sm text-gray-500 mt-1">Panel Twojego rozwoju zawodowego</p>
                             </div>
 
-                            <div className="mt-4 sm:mt-0 flex items-center bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                                <span className="text-xs font-semibold text-gray-500 mr-2 uppercase tracking-wide">Widok:</span>
-                                <select
-                                    className="bg-transparent text-sm font-medium text-gray-900 focus:outline-none cursor-pointer"
-                                    value={selectedUserId}
-                                    onChange={(e) => setSelectedUserId(Number(e.target.value))}
-                                >
-                                    {MOCKED_USERS.map(user => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.name} ({user.status})
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="flex flex-col items-end">
+                                <button
+                                    onClick={() => navigate(-1)}
+                                    className="text-sm mb-4 text-gray-500 hover:text-gray-800 flex items-center transition-colors group">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 -2 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="w-4 h-4 mr-2 text-gray-400 group-hover:text-gray-800 transition-colors"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                                    </svg>
+                                    Powrót do strony głównej
+                                </button>
+                                <div className="mt-4 sm:mt-0 flex items-center bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                                    <span className="text-xs font-semibold text-gray-500 mr-2 uppercase tracking-wide">Widok:</span>
+                                    <select
+                                        className="bg-transparent text-sm font-medium text-gray-900 focus:outline-none cursor-pointer"
+                                        value={selectedUserId || ''}
+                                        onChange={(e) => {
+                                            const newEmployeeId = Number(e.target.value);
+                                            setSelectedUserId(newEmployeeId);
+                                            sessionStorage.setItem(SELECTED_EMPLOYEE_ID, String(newEmployeeId));
+                                        }}
+                                    >
+                                        {employees.map(user => (
+                                            <option key={user.id} value={user.id}>
+                                                {user.name} ({user.status})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
