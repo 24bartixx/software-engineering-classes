@@ -9,7 +9,9 @@ import type { Address } from "../../types/address";
 import {
   getAddress,
   removeAddressFromUser,
+  createAddressForUser,
 } from "../../services/api/users-api";
+import { updateAddress } from "../../services/api/addresses-api";
 
 type Country = Option<string>;
 
@@ -156,22 +158,22 @@ export default function EditAddress() {
       apartment: apartment || undefined,
     };
 
-    // TODO: Make API call to update address
-    // Example:
-    // try {
-    //   await fetch(`/api/users/${id}/address`, {
-    //     method: 'PATCH',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(updatedAddress),
-    //   });
-    //   navigate(-1);
-    // } catch (err) {
-    //   setError("Failed to update address");
-    // }
-
-    console.log("Update address for user:", id, updatedAddress);
-    sessionStorage.setItem("fromEditAddress", "true");
-    navigate(-1);
+    try {
+      if (isAddingNew) {
+        await createAddressForUser(Number.parseInt(id!), updatedAddress);
+      } else {
+        if (addressId) {
+          await updateAddress(addressId, updatedAddress);
+        }
+      }
+      sessionStorage.setItem("fromEditAddress", "true");
+      navigate(-1);
+    } catch (err) {
+      console.error("Failed to save address:", err);
+      setError(
+        isAddingNew ? "Failed to add address" : "Failed to update address",
+      );
+    }
   };
 
   if (isLoading) {

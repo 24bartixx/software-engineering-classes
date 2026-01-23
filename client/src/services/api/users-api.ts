@@ -100,3 +100,25 @@ export const removeAddressFromUser = async (id: number) => {
   );
   return response.data;
 };
+
+export const createAddressForUser = async (
+  id: number,
+  addressData: Omit<Address, "address_id">,
+) => {
+  // Transform client Address type to server format
+  const serverAddress = {
+    country: addressData.country,
+    state: addressData.state,
+    postal_code: addressData.postalCode,
+    city: addressData.city,
+    street: addressData.street,
+    number: addressData.houseNumber,
+    apartment: addressData.apartment,
+  };
+
+  const response = await axios.post(
+    `${API_BASE_URL}/users/create-address/${id}`,
+    serverAddress,
+  );
+  return response.data;
+};

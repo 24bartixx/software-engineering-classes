@@ -12,6 +12,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { Administrator } from 'src/administrator/entities/administrator.entity';
 import { ProjectManager } from 'src/project-managers/entities/project-manager.entity';
+import { CreateUserAddressDto } from './dto/create-user-address.dto';
 
 @Injectable()
 export class UsersService {
@@ -283,5 +284,30 @@ export class UsersService {
         // The address_id is already set to null for this user
       }
     }
+  }
+
+  async createAddress(
+    userId: number,
+    createUserAddressDto: CreateUserAddressDto,
+  ): Promise<Address> {
+    const user = await this.usersRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Create the new address
+    const address = this.addressRepository.create(createUserAddressDto);
+    const savedAddress = await this.addressRepository.save(address);
+
+    // Assign the address to the user
+    await this.usersRepository.update(userId, {
+      address_id: savedAddress.address_id,
+      modified_at: new Date(),
+    });
+
+    return savedAddress;
   }
 }

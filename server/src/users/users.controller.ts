@@ -15,6 +15,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { EditUserDto } from './dto/edit-user.dto';
+import { CreateUserAddressDto } from './dto/create-user-address.dto';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -69,5 +70,14 @@ export class UsersController {
   async removeAddress(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.removeAddress(id);
     return { message: 'Address removed successfully!' };
+  }
+
+  @Post('create-address/:id')
+  async createAddress(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() createUserAddressDto: CreateUserAddressDto,
+  ) {
+    await this.usersService.createAddress(id, createUserAddressDto);
+    return { message: 'Address created successfully!' };
   }
 }
