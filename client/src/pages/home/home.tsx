@@ -13,23 +13,11 @@ export default function Home() {
       <Link title="Add User" to="/add-user">
         Dodaj użytkownika
       </Link>
-      <Link title="Go to belbin test" to="/belbin/test">
-        Zrób test Belbina
-      </Link>
-      <Link title="Go to belbin test result for user" to="/belbin/results">
-        Wyniki Belbina dla usera
-      </Link>
       <Link title="Go to belbin dashboard for user" to="/belbin/dashboard">
         Belbin dashboard
       </Link>
-      <Link title="Go to expired belbin tests for hr" to="/belbin/expired">
+      <Link title="Go to expired belbin tests for hr" to="/hr/belbin/expired">
         Przeterminowane testy Belbina
-      </Link>
-      <Link
-        title="Go to belbin worker test result for hr"
-        to="/belbin/results/user"
-      >
-        Wyniki Belbina usera dla hr
       </Link>
     </PageCard>
   );

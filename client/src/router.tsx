@@ -36,8 +36,8 @@ export const router = createBrowserRouter([
       { path: "belbin/test/:employeeId", element: <DoBelbinTest /> },
       { path: "belbin/results/:employeeId", element: <BelbinResults /> },
       { path: "belbin/dashboard", element: <BelbinDashboard /> },
-      { path: "belbin/expired", element: <ExpiredTestsView /> },
-      { path: "belbin/results/user/:employeeId", element: <MangerBelbinPreview /> },
+      { path: "hr/belbin/expired", element: <ExpiredTestsView /> },
+      { path: "hr/belbin/results/:employeeId", element: <MangerBelbinPreview /> },
     ],
   },
 ]);

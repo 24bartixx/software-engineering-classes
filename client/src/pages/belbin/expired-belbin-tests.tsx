@@ -58,7 +58,7 @@ export default function ExpiredTestsView() {
     };
 
     const handleViewTest = (employeeId: number) => {
-        navigate(`/belbin/results/user/${employeeId}`);
+        navigate(`/hr/belbin/results/${employeeId}`);
     };
 
     if (isLoading) {
