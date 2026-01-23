@@ -131,8 +131,9 @@ export default function BelbinDashboard() {
     if (isLoading) {
         return (
             <PageCard>
-                <div className="flex items-center justify-center min-h-[400px]">
-                    <div className="text-lg text-black/60">Ładowanie danych o pracownikach...</div>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+                    <p className="text-gray-500 font-medium">Ładowanie danych o pracownikach...</p>
                 </div>
             </PageCard>
         );

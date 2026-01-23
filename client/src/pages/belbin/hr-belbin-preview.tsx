@@ -62,28 +62,19 @@ export default function ManagerBelbinPreview() {
             setReminderSent(true);
         } catch (error: any) {
             console.error("Błąd wysyłania przypomnienia:", error);
-            const errorResponse = error.response?.data?.message;
-            const msg = Array.isArray(errorResponse)
-                ? errorResponse[0] : (errorResponse || `Wystąpił błąd podczas wysyłania powiadomienia do pracownika ${employeeName}.`);
-            addNotification('error', msg);
+            const msg = error.response?.data?.message || `Wystąpił błąd podczas wysyłania powiadomienia do pracownika ${employeeName}.`;
+            addNotification('error', Array.isArray(msg) ? msg[0] : msg);
         } finally {
             setIsSending(false);
         }
     };
 
     if (isLoading) {
-        /*return (
-            <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-                    <p className="text-gray-500 font-medium">Analiza wyników...</p>
-                </div>
-            </div>
-        );*/
         return (
             <PageCard>
-                <div className="flex items-center justify-center min-h-[400px]">
-                    <div className="text-lg text-black/60">Ładowanie wyników...</div>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+                    <p className="text-gray-500 font-medium">Ładowanie wyników...</p>
                 </div>
             </PageCard>
         );

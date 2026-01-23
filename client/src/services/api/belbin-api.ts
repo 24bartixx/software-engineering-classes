@@ -1,5 +1,5 @@
 import axios from "axios"
-import type { BelbinQuestion, EmployeeBelbinResult, EmployeeBelbinTestStatus } from "../../types/belbin";
+import type { BelbinQuestion, EmployeeBelbinResult, EmployeeBelbinTestStatus, ExpiredBelbinTest } from "../../types/belbin";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -38,6 +38,13 @@ export const getTestResults = async (employeeId: number) => {
 export const sendReminderNotification = async (employeeId: number) => {
     const response = await axios.post(
         `${API_BASE_URL}/belbin/notify-expired/${employeeId}`
+    );
+    return response.data;
+};
+
+export const getExpiredBelbinTests = async () => {
+    const response = await axios.get<ExpiredBelbinTest[]>(
+        `${API_BASE_URL}/belbin/expired`
     );
     return response.data;
 };

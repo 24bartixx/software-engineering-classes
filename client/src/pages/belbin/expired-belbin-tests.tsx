@@ -1,45 +1,76 @@
-import { useState } from 'react';
+import {useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageCard from '../../components/page-card';
 import ToastNotification, { type Notification, type NotificationType } from '../../components/toast-notification';
 import type { ExpiredBelbinTest } from "../../types/belbin";
-
-const EXPIRED_TESTS: ExpiredBelbinTest[] = [
-    { userId: 1, firstName: 'Tomasz', lastName: 'Kowalski', department: ['Marketing', 'IT'], expirationDate: '15.11.2025' },
-    { userId: 2, firstName: 'Anna', lastName: 'Kowalska', department: ['Marketing', 'IT'], expirationDate: '10.11.2025' },
-    { userId: 3, firstName: 'Jan', lastName: ' Nowak', department: ['Sprzedaż'], expirationDate: '05.11.2025' },
-    { userId: 4, firstName: 'Piotr', lastName: 'Wiśniewski', department: ['HR'], expirationDate: '01.11.2025' },
-    { userId: 5, firstName: 'Maria', lastName: 'Wójcik', department: ['Finanse'], expirationDate: '28.10.2025' },
-    { userId: 6, firstName: 'Krzysztof', lastName: 'Kamiński', department: ['IT'], expirationDate: '25.10.2025' },
-    { userId: 7, firstName: 'Magdalena', lastName: 'Lewandowska', department: ['Marketing'], expirationDate: '20.10.2025' },
-    { userId: 8, firstName: 'Paweł', lastName: 'Zieliński', department: ['Sprzedaż'], expirationDate: '18.10.2025' },
-];
+import { getExpiredBelbinTests, sendReminderNotification } from "../../services/api/belbin-api";
 
 export default function ExpiredTestsView() {
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const navigate = useNavigate();
+
+    const [expiredTests, setExpiredTests] = useState<ExpiredBelbinTest[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [sendingMap, setSendingMap] = useState<Record<number, boolean>>({});
     const [remindedUserIds, setRemindedUserIds] = useState<Set<number>>(new Set());
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
     const addNotification = (type: NotificationType, message: string) => {
         const id = Date.now();
         setNotifications((prev) => [...prev, { id, type, message }]);
-
-        setTimeout(() => {
-            setNotifications((prev) => prev.filter((n) => n.id !== id));
-        }, 4000);
+        setTimeout(() => removeNotification(id), 5000);
     };
 
     const removeNotification = (id: number) => {
         setNotifications((prev) => prev.filter((n) => n.id !== id));
     };
 
-    const handleSendReminder = (user: ExpiredBelbinTest) => {
-        if (user.userId === 8) {
-            addNotification('error', `Błąd przy wysyłaniu powiadomienia do pracownika ${user.firstName} ${user.lastName}.`);
-            return;
-        }
+    const formatDate = (date: Date) => new Date(date).toLocaleDateString();
 
-        addNotification('success', `Wysłano pomyślnie powiadomienie do pracownika ${user.firstName} ${user.lastName}.`);
-        setRemindedUserIds((prev) => new Set(prev).add(user.userId));
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const data = await getExpiredBelbinTests();
+                setExpiredTests(data);
+            } catch (error) {
+                console.error("Błąd pobierania listy:", error);
+                addNotification('error', 'Nie udało się pobrać listy przeterminowanych testów.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const handleSendReminder = async (test: ExpiredBelbinTest) => {
+        setSendingMap(prev => ({ ...prev, [test.employeeId]: true }));
+        try {
+            await sendReminderNotification(test.employeeId);
+            addNotification('success', `Wysłano pomyślnie powiadomienie do pracownika ${test.firstName} ${test.lastName}.`);
+            setRemindedUserIds(prev => new Set(prev).add(test.employeeId));
+        } catch (error: any) {
+            console.error('Błąd wysyłania powiadomienia:', error);
+            const msg = error.response?.data?.message || `Wystąpił błąd podczas wysyłania powiadomienia do pracownika ${test.firstName} ${test.lastName}.`;
+            addNotification('error', Array.isArray(msg) ? msg[0] : msg);
+        } finally {
+            setSendingMap(prev => ({ ...prev, [test.employeeId]: false }));
+        }
     };
+
+    const handleViewTest = (employeeId: number) => {
+        navigate(`/belbin/results/user/${employeeId}`);
+    };
+
+    if (isLoading) {
+        return (
+            <PageCard>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+                    <p className="text-gray-500 font-medium">Ładowanie wyników...</p>
+                </div>
+            </PageCard>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-start py-12 font-sans relative">
@@ -57,7 +88,10 @@ export default function ExpiredTestsView() {
                                 <h1 className="text-2xl font-bold text-gray-900">Przeterminowane Testy Belbina</h1>
                             </div>
 
-                            <button className="text-sm text-gray-500 hover:text-gray-800 flex items-center transition-colors group">
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="text-sm text-gray-500 hover:text-gray-800 flex items-center transition-colors group"
+                            >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
@@ -83,27 +117,32 @@ export default function ExpiredTestsView() {
                                 </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
-                                {EXPIRED_TESTS.map((user) => (
-                                    <tr key={user.userId} className="group hover:bg-gray-50 transition-colors">
-                                        <td className="py-4 pl-2 text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</td>
-                                            <td className="py-4 text-sm text-gray-600">{user.department.join(", ")}</td>
-                                        <td className="py-4 text-sm text-gray-600">{user.expirationDate}</td>
+                                {expiredTests.map((test) => (
+                                    <tr key={test.employeeId} className="group hover:bg-gray-50 transition-colors">
+                                        <td className="py-4 pl-2 text-sm font-medium text-gray-900">{test.firstName} {test.lastName}</td>
+                                        <td className="py-4 text-sm text-gray-600">{test.departments.join(", ")}</td>
+                                        <td className="py-4 text-sm text-gray-600">{formatDate(test.testExpirationDate)}</td>
                                         <td className="py-4">
                                             <div className="flex items-center gap-2">
-                                                <button className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors">
+                                                <button
+                                                    onClick={() => handleViewTest(test.employeeId)}
+                                                    className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors"
+                                                >
                                                     Zobacz test
                                                 </button>
 
                                                 <button
-                                                    onClick={() => handleSendReminder(user)}
-                                                    disabled={remindedUserIds.has(user.userId)}
+                                                    onClick={() => handleSendReminder(test)}
+                                                    disabled={remindedUserIds.has(test.employeeId) || sendingMap[test.employeeId]}
                                                     className={`px-3 py-1.5 text-xs font-medium rounded transition-colors border ${
-                                                        remindedUserIds.has(user.userId)
+                                                        sendingMap[test.employeeId] || remindedUserIds.has(test.employeeId)
                                                             ? 'bg-gray-200 text-gray-400 border-gray-200 cursor-not-allowed' 
                                                             : 'bg-white text-slate-900 border-slate-900 hover:bg-gray-50'
                                                     }`}
                                                 >
-                                                    {remindedUserIds.has(user.userId) ? 'Przypomnienie wysłane' : 'Wyślij przypomnienie'}
+                                                    {sendingMap[test.employeeId] ? 'Wysyłanie...'
+                                                        : remindedUserIds.has(test.employeeId) ? 'Przypomnienie wysłane' :
+                                                            'Wyślij przypomnienie'}
                                                 </button>
                                             </div>
                                         </td>
@@ -115,16 +154,6 @@ export default function ExpiredTestsView() {
                     </div>
                 </PageCard>
             </div>
-
-            <style>{`
-                @keyframes slide-in {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                .animate-slide-in {
-                    animation: slide-in 0.3s ease-out forwards;
-                }
-            `}</style>
         </div>
     );
 }

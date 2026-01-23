@@ -1,14 +1,3 @@
-export type BelbinRole =
-    | 'Plant' | 'Resource Investigator' | 'Coordinator'
-    | 'Shaper' | 'Monitor Evaluator' | 'Teamworker'
-    | 'Implementer' | 'Completer Finisher' | 'Specialist';
-
-export type BelbinResult = {
-    userId: number;
-    date: string;
-    scores: Record<BelbinRole, number>;
-};
-
 export type BelbinQuestion = {
     id: number;
     content: string;
@@ -48,10 +37,9 @@ export type BelbinCategoryResult = {
 };
 
 export type ExpiredBelbinTest = {
-    userId: number;
+    employeeId: number;
     firstName: string;
     lastName: string;
-    department: string[];
-    expirationDate: string;
-    lastTestDate?: string;
+    departments: string[];
+    testExpirationDate: Date;
 };

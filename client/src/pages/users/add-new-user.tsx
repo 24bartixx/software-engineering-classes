@@ -64,9 +64,9 @@ export default function AddNewUser() {
   );
 
   const [departmentOptions, setDepartmentOptions] = useState<Department[]>([]);
-  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
+  const [, setIsLoadingDepartments] = useState(true);
   const [branchOptions, setBranchOptions] = useState<Branch[]>([]);
-  const [isLoadingBranches, setIsLoadingBranches] = useState(true);
+  const [, setIsLoadingBranches] = useState(true);
 
   const [error, setError] = useState("");
   const [fieldError, setFieldError] = useState<FieldKey | null>(null);
