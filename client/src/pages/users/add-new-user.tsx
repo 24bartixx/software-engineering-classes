@@ -332,7 +332,7 @@ export default function AddNewUser() {
                       {formatAddress(address)}
                     </span>
                   ) : (
-                    <span className="text-black/50">brak</span>
+                    <span className="text-black/50">No address</span>
                   )}
                 </div>
                 <button

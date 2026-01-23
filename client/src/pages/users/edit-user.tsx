@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import PageCard from "../../components/page-card";
 import CustomTextInput from "../../components/custom-text-input";
 import CustomPhoneInput from "../../components/custom-phone-input";
@@ -9,8 +10,13 @@ import CustomSelect from "../../components/custom-select";
 
 import type { Department } from "../../types/department";
 import type { Branch } from "../../types/branch";
-import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import {
+  ExclamationCircleIcon,
+  PencilIcon,
+  PlusIcon,
+} from "@heroicons/react/24/solid";
 import type { Gender } from "../../types/gender";
+import type { Address } from "../../types/address";
 import { editUser, getUserProfile } from "../../services/api/users-api";
 import { getAllDepartments } from "../../services/api/departments-api";
 import { getAllBranches } from "../../services/api/branches-api";
@@ -31,6 +37,7 @@ type FieldKey =
 
 export default function EditUser() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
 
   const [firstName, setFirstName] = useState("");
@@ -42,6 +49,9 @@ export default function EditUser() {
   const [phoneNumber, setPhoneNumber] = useState("");
 
   const [birthDate, setBirthDate] = useState("");
+
+  const [address, setAddress] = useState<Address | null>(null);
+  const [hasAddress, setHasAddress] = useState(false);
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -55,6 +65,7 @@ export default function EditUser() {
   const [fieldError, setFieldError] = useState<FieldKey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -91,6 +102,27 @@ export default function EditUser() {
         const birthDateStr = `${profile.birthYear}-${String(profile.birthMonth).padStart(2, "0")}-${String(profile.birthDay).padStart(2, "0")}`;
         setBirthDate(birthDateStr);
 
+        // Check if user has address
+        const userHasAddress =
+          profile.addressCountry &&
+          profile.addressPostalCode &&
+          profile.addressCity &&
+          profile.addressStreet &&
+          profile.addressNumber;
+
+        if (userHasAddress) {
+          setHasAddress(true);
+          setAddress({
+            country: profile.addressCountry,
+            state: profile.addressState || undefined,
+            postalCode: profile.addressPostalCode,
+            city: profile.addressCity,
+            street: profile.addressStreet,
+            houseNumber: profile.addressNumber,
+            apartment: profile.addressApartment || undefined,
+          });
+        }
+
         setIsLoading(false);
       } catch (err) {
         console.error("Failed to fetch user profile:", err);
@@ -101,6 +133,54 @@ export default function EditUser() {
 
     fetchUserData();
   }, [id]);
+
+  useEffect(() => {
+    const fromEditAddress =
+      sessionStorage.getItem("fromEditAddress") === "true";
+    if (fromEditAddress) {
+      setShouldAnimate(true);
+      sessionStorage.removeItem("fromEditAddress");
+
+      // Refetch user data after returning from edit-address
+      const refetchUserData = async () => {
+        if (!id) return;
+        try {
+          const profile = await getUserProfile(Number.parseInt(id));
+
+          const userHasAddress =
+            profile.addressCountry &&
+            profile.addressPostalCode &&
+            profile.addressCity &&
+            profile.addressStreet &&
+            profile.addressNumber;
+
+          if (userHasAddress) {
+            setHasAddress(true);
+            setAddress({
+              country: profile.addressCountry,
+              state: profile.addressState || undefined,
+              postalCode: profile.addressPostalCode,
+              city: profile.addressCity,
+              street: profile.addressStreet,
+              houseNumber: profile.addressNumber,
+              apartment: profile.addressApartment || undefined,
+            });
+          } else {
+            setHasAddress(false);
+            setAddress(null);
+          }
+        } catch (err) {
+          console.error("Failed to refetch user profile:", err);
+        }
+      };
+      refetchUserData();
+    }
+
+    if (location.state?.address) {
+      setAddress(location.state.address);
+      setHasAddress(true);
+    }
+  }, [location, id]);
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -162,6 +242,16 @@ export default function EditUser() {
 
     fetchAndSetUserDepartmentsAndBranches();
   }, [id, isLoadingDepartments, isLoadingBranches, isLoading]);
+
+  const formatAddress = (addr: Address) => {
+    const parts = [
+      addr.country,
+      addr.postalCode,
+      addr.city,
+      `ul. ${addr.street} ${addr.houseNumber}`,
+    ];
+    return parts.join(", ");
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,7 +332,7 @@ export default function EditUser() {
     );
   }
 
-  return (
+  const content = (
     <PageCard>
       <form
         onSubmit={onSubmit}
@@ -350,6 +440,45 @@ export default function EditUser() {
             />
           </div>
 
+          <div className="w-full py-3">
+            <div className="flex items-center justify-between gap-10 text-lg">
+              <label className="font-normal text-black">
+                Residential address
+              </label>
+
+              <div className="flex items-center gap-3 w-[28rem]">
+                <div className="h-14 flex-1 rounded-2xl border border-black bg-white px-6 flex items-center text-base">
+                  {address ? (
+                    <span className="truncate text-black">
+                      {formatAddress(address)}
+                    </span>
+                  ) : (
+                    <span className="text-black/50">No address</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    sessionStorage.setItem("fromEditUser", "true");
+                    navigate(`/users/edit-address/${id}`, {
+                      state: {
+                        returnTo: `/edit-user/${id}`,
+                        isAddingNew: !hasAddress,
+                      },
+                    });
+                  }}
+                  className="h-14 w-14 rounded-2xl border-1 border-black bg-white hover:bg-gray-50 active:scale-[0.99] flex items-center justify-center flex-shrink-0"
+                >
+                  {hasAddress ? (
+                    <PencilIcon className="h-6 w-6 text-black" />
+                  ) : (
+                    <PlusIcon className="h-6 w-6 text-black" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="w-full">
             <CustomMultiSelect
               label="Departments"
@@ -399,4 +528,19 @@ export default function EditUser() {
       </form>
     </PageCard>
   );
+
+  if (shouldAnimate) {
+    return (
+      <motion.div
+        initial={{ x: "-100%", opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: "-100%", opacity: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        {content}
+      </motion.div>
+    );
+  }
+
+  return content;
 }

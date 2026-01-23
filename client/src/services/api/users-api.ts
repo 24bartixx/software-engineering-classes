@@ -72,10 +72,25 @@ export const editUser = async (id: number, data: EditUserDto) => {
 };
 
 export const getAddress = async (id: number): Promise<Address | null> => {
-  const response = await axios.get<Address | null>(
+  const response = await axios.get<any>(
     `${API_BASE_URL}/users/get-address/${id}`,
   );
-  return response.data;
+
+  if (!response.data) {
+    return null;
+  }
+
+  // Transform server response to match client Address type
+  return {
+    address_id: response.data.address_id,
+    country: response.data.country,
+    state: response.data.state,
+    postalCode: response.data.postal_code,
+    city: response.data.city,
+    street: response.data.street,
+    houseNumber: response.data.number,
+    apartment: response.data.apartment,
+  };
 };
 
 export const removeAddressFromUser = async (id: number) => {
