@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import PageCard from '../components/page-card';
+import PageCard from '../../components/page-card';
 
 const MOCKED_USERS = [
     {

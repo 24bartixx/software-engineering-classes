@@ -1,5 +1,5 @@
-import PageCard from '../components/page-card';
-import BelbinReportBody from '../components/belbin-results-body';
+import PageCard from '../../components/page-card';
+import BelbinReportBody from '../../components/belbin-results-body';
 
 const MOCKED_RESULTS = [
     { id: 'completer', name: 'Perfekcjonista (Completer Finisher)', score: 27, description: 'Sumienny, dbający o szczegóły. Sprawdza pracę pod kątem błędów i pilnuje, aby wszystko było wykonane na czas.' },

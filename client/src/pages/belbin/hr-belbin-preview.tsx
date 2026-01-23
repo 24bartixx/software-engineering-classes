@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import PageCard from '../components/page-card';
-import BelbinResultsBody from '../components/belbin-results-body';
-import ToastNotification, {type Notification, type NotificationType} from "../components/toast-notification";
+import PageCard from '../../components/page-card';
+import BelbinResultsBody from '../../components/belbin-results-body';
+import ToastNotification, {type Notification, type NotificationType} from "../../components/toast-notification";
 
 const MOCKED_EMPLOYEE_RESULTS = [
     { id: 'completer', name: 'Perfekcjonista (Completer Finisher)', score: 27, description: 'Sumienny, dbający o szczegóły. Sprawdza pracę pod kątem błędów i pilnuje, aby wszystko było wykonane na czas.' },

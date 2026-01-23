@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import PageCard from '../components/page-card';
-import ToastNotification, { type Notification, type NotificationType } from '../components/toast-notification';
-import type { ExpiredBelbinTest } from "../types/belbin";
+import PageCard from '../../components/page-card';
+import ToastNotification, { type Notification, type NotificationType } from '../../components/toast-notification';
+import type { ExpiredBelbinTest } from "../../types/belbin";
 
 const EXPIRED_TESTS: ExpiredBelbinTest[] = [
     { userId: 1, firstName: 'Tomasz', lastName: 'Kowalski', department: ['Marketing', 'IT'], expirationDate: '15.11.2025' },
