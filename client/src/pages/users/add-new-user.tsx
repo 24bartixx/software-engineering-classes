@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageCard from "../../components/page-card";
@@ -73,6 +73,11 @@ export default function AddNewUser() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [shouldAnimate, setShouldAnimate] = useState(false);
+
+  const [isDraggingAddress, setIsDraggingAddress] = useState(false);
+  const [addressStartX, setAddressStartX] = useState(0);
+  const [addressScrollLeft, setAddressScrollLeft] = useState(0);
+  const addressScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     console.log("location.state:", location.state);
@@ -211,6 +216,29 @@ export default function AddNewUser() {
     return parts.join(", ");
   };
 
+  const handleAddressMouseDown = (e: React.MouseEvent) => {
+    if (!addressScrollRef.current) return;
+    setIsDraggingAddress(true);
+    setAddressStartX(e.pageX - addressScrollRef.current.offsetLeft);
+    setAddressScrollLeft(addressScrollRef.current.scrollLeft);
+  };
+
+  const handleAddressMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingAddress || !addressScrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - addressScrollRef.current.offsetLeft;
+    const walk = (x - addressStartX) * 2;
+    addressScrollRef.current.scrollLeft = addressScrollLeft - walk;
+  };
+
+  const handleAddressMouseUp = () => {
+    setIsDraggingAddress(false);
+  };
+
+  const handleAddressMouseLeave = () => {
+    setIsDraggingAddress(false);
+  };
+
   const content = (
     <PageCard>
       <form
@@ -326,9 +354,17 @@ export default function AddNewUser() {
               </label>
 
               <div className="flex items-center gap-3 w-[28rem]">
-                <div className="h-14 flex-1 rounded-2xl border border-black bg-white px-6 flex items-center text-base">
+                <div
+                  ref={addressScrollRef}
+                  onMouseDown={handleAddressMouseDown}
+                  onMouseMove={handleAddressMouseMove}
+                  onMouseUp={handleAddressMouseUp}
+                  onMouseLeave={handleAddressMouseLeave}
+                  className={`h-14 flex-1 min-w-0 rounded-2xl border border-black bg-white px-6 flex items-center text-base overflow-x-auto ${isDraggingAddress ? "cursor-grabbing" : "cursor-grab"}`}
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                >
                   {address ? (
-                    <span className="truncate text-black">
+                    <span className="text-black whitespace-nowrap">
                       {formatAddress(address)}
                     </span>
                   ) : (
