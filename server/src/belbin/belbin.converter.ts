@@ -31,8 +31,8 @@ export class BelbinConverter {
 
         return {
             employeeId: test.employee.id,
-            employeeFirstName: test.employee.user.first_name,
-            employeeLastName: test.employee.user.last_name,
+            firstName: test.employee.user.first_name,
+            lastName: test.employee.user.last_name,
             testDate: test.performedAt,
             results: testResults,
         };

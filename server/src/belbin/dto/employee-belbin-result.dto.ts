@@ -26,11 +26,11 @@ export class EmployeeBelbinResultDto {
 
     @ApiProperty({ description: 'The first name of the employee' })
     @IsString()
-    employeeFirstName: string;
+    firstName: string;
 
     @ApiProperty({ description: 'The last name of the employee' })
     @IsString()
-    employeeLastName: string;
+    lastName: string;
 
     @ApiProperty({ description: 'The date when the Belbin test was taken' })
     @IsDateString()

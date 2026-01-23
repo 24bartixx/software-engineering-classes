@@ -1,23 +1,92 @@
+import { useNavigate, useParams } from 'react-router-dom';
 import PageCard from '../../components/page-card';
 import BelbinReportBody from '../../components/belbin-results-body';
-
-const MOCKED_RESULTS = [
-    { id: 'completer', name: 'Perfekcjonista (Completer Finisher)', score: 27, description: 'Sumienny, dbający o szczegóły. Sprawdza pracę pod kątem błędów i pilnuje, aby wszystko było wykonane na czas.' },
-    { id: 'teamworker', name: 'Dusza Zespołu (Teamworker)', score: 15, description: 'Kooperatywny, dyplomatyczny. Słucha innych i łagodzi konflikty. Buduje harmonię w grupie.' },
-    { id: 'monitor', name: 'Ewaluator (Monitor Evaluator)', score: 9, description: 'Strategiczny i wnikliwy. Widzi wszystkie opcje i trafnie ocenia sytuację. Rzadko się myli.' },
-    { id: 'implementer', name: 'Realizator (Implementer)', score: 5, description: 'Praktyczny, niezawodny, zorganizowany. Przekształca pomysły w konkretne działania.' },
-    { id: 'shaper', name: 'Inspirator (Shaper)', score: 4, description: 'Dynamiczny, radzi sobie z presją. Ma odwagę i siłę, by pokonywać przeszkody.' },
-    { id: 'plant', name: 'Kreator (Plant)', score: 4, description: 'Kreatywny, obdarzony wyobraźnią. Rozwiązuje trudne problemy w nietypowy sposób.' },
-    { id: 'coordinator', name: 'Koordynator (Coordinator)', score: 3, description: 'Dojrzały, pewny siebie. Wyjaśnia cele, promuje decyzyjność i dobrze deleguje zadania.' },
-    { id: 'resource', name: 'Poszukiwacz Źródeł (Resource Investigator)', score: 3, description: 'Entuzjastyczny, komunikatywny. Bada możliwości i rozwija kontakty.' },
-    { id: 'specialist', name: 'Specjalista (Specialist)', score: 0, description: 'Jednostka skupiona na celu. Dostarcza rzadkiej wiedzy i umiejętności.' },
-];
-
-const TEST_DONE_DATE = new Date('2025-01-15');
+import {useEffect, useState } from "react";
+import type { EmployeeBelbinResult } from "../../types/belbin";
+import {getTestResults} from "../../services/api/belbin-api";
 
 export default function UserBelbinResults() {
-    const sorted = [...MOCKED_RESULTS].sort((a, b) => b.score - a.score);
-    const topRoleName = sorted[0].name.split(' (')[0];
+    const { employeeId } = useParams<{ employeeId: string }>();
+    const navigate = useNavigate();
+
+    const [data, setData] = useState<EmployeeBelbinResult | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchResults = async () => {
+            setIsLoading(true);
+            if (!employeeId) {
+                setError("Brak identyfikatora pracownika.");
+                setIsLoading(false);
+                return;
+            }
+
+            try {
+                const results = await getTestResults(Number(employeeId));
+                setData(results);
+            } catch (err: any) {
+                console.error("Błąd pobierania wyników:", err);
+                const msg = err.response?.status === 404
+                    ? "Nie znaleziono wyników testu dla tego pracownika."
+                    : "Wystąpił błąd podczas pobierania wyników. Spróbuj ponownie później.";
+                setError(msg);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchResults();
+    }, [employeeId]);
+
+    if (isLoading) {
+        /*return (
+            <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+                    <p className="text-gray-500 font-medium">Analiza wyników...</p>
+                </div>
+            </div>
+        );*/
+        return (
+            <PageCard>
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <div className="text-lg text-black/60">Ładowanie wyników...</div>
+                </div>
+            </PageCard>
+        );
+    }
+
+    if (error || !data) {
+        return (
+            <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-start py-8">
+                <div className="w-full max-w-3xl">
+                    <PageCard>
+                        <div className="p-8 text-center">
+                            <div className="bg-red-50 text-red-600 p-4 rounded-lg inline-block mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                </svg>
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 mb-2">Nie można wyświetlić wyników</h2>
+                            <p className="text-gray-600 mb-6">{error}</p>
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors"
+                            >
+                                Wróć do panelu
+                            </button>
+                        </div>
+                    </PageCard>
+                </div>
+            </div>
+        );
+    }
+
+    const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
+    const topRoleName = sortedResults[0]?.name.split(' (')[0] || 'Nieokreślony';
+    const lastRoleName = sortedResults[sortedResults.length - 1]?.name.split(' (')[0] || 'Nieokreślony';
+
+    const formattedDate = new Date(data.testDate).toLocaleDateString();
 
     return (
         <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-start py-8 font-sans">
@@ -25,7 +94,10 @@ export default function UserBelbinResults() {
                 <PageCard>
                     <div className="p-6">
                         <div className="mb-8">
-                            <button className="text-sm text-gray-500 hover:text-gray-800 mb-8 flex items-center transition-colors">
+                            <button
+                                onClick={() => navigate("/belbin/dashboard")}
+                                className="text-sm text-gray-500 hover:text-gray-800 mb-8 flex items-center transition-colors"
+                            >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
@@ -39,9 +111,12 @@ export default function UserBelbinResults() {
                                 Powrót do profilu
                             </button>
                             <h1 className="text-2xl font-bold text-gray-900 mb-1">Twoje Role Zespołowe Belbina</h1>
-                            <p className="text-sm text-gray-400">Test wykonano: {TEST_DONE_DATE.toLocaleDateString()}</p>
+                            <p className="text-sm text-gray-400">{data.firstName} {data.lastName}</p>
+                            {<p className="text-sm text-gray-400">Test wykonano: {formattedDate}</p>}
                         </div>
-                        <BelbinReportBody results={MOCKED_RESULTS} />
+
+                        <BelbinReportBody results={data.results} />
+
                         <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6">
                             <h3 className="font-bold text-emerald-900 mb-3">Interpretacja wyników</h3>
                             <p className="text-sm text-emerald-800 mb-4 leading-relaxed">
@@ -65,7 +140,7 @@ export default function UserBelbinResults() {
                                 <ul className="list-disc list-inside text-sm text-emerald-800 space-y-1 ml-3">
                                     <li>Wykorzystuj swoje mocne strony, takie jak {topRoleName.split(' (')[0]}.</li>
                                     <li>Rozwijaj świadomie role wspierające (twoje miejsca 2 i 3).</li>
-                                    <li>Unikaj zadań, które wymagają ról z końca Twojej listy (np. {sorted[sorted.length-1].name.split(' (')[0]}).</li>
+                                    <li>Unikaj zadań, które wymagają ról z końca Twojej listy (np. <strong>{lastRoleName}</strong>).</li>
                                     <li>Dziel się tymi wynikami z zespołem, aby lepiej dzielić zadania.</li>
                                 </ul>
                             </div>

@@ -8,11 +8,12 @@ import {
     Legend,
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
+import type { BelbinCategoryResult } from "../types/belbin";
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 type BelbinResultsBodyProps = {
-    results: Array<{ id: string, name: string, score: number, description: string }>;
+    results: Array<BelbinCategoryResult>;
 }
 
 export default function BelbinResultsBody({ results }: BelbinResultsBodyProps) {
@@ -20,13 +21,8 @@ export default function BelbinResultsBody({ results }: BelbinResultsBodyProps) {
     const top3 = sortedResults.slice(0, 3);
     const maxScore = Math.max(...results.map(r => r.score));
 
-    const chartOrder = ['implementer', 'coordinator', 'shaper', 'plant', 'resource', 'monitor', 'teamworker', 'completer'];
-    const chartLabels = ['Realizator', 'Koordynator', 'Inspirator', 'Kreator', 'Poszukiwacz', 'Ewaluator', 'Dusza Zespołu', 'Perfekcjonista'];
-
-    const chartDataValues = chartOrder.map(roleId => {
-        const role = results.find(r => r.id === roleId);
-        return role ? role.score : 0;
-    });
+    const chartLabels = results.map(role => role.name.split(' (')[0]);
+    const chartDataValues = results.map(role => role.score);
 
     const chartData = {
         labels: chartLabels,

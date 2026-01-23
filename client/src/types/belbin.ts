@@ -7,7 +7,7 @@ export type BelbinResult = {
     userId: number;
     date: string;
     scores: Record<BelbinRole, number>;
-}
+};
 
 export type BelbinQuestion = {
     id: number;
@@ -17,20 +17,35 @@ export type BelbinQuestion = {
         text: string;
         relatedRoleFieldName: string;
     }[];
-}
+};
 
 export enum BelbinTestStatus {
     NOT_STARTED = 'not_started',
     COMPLETED = 'completed',
     EXPIRED = 'expired',
-}
+};
 
 export type EmployeeBelbinTestStatus = {
     id: number;
     name: string;
     status: BelbinTestStatus;
     lastTestDate: Date | null;
-}
+};
+
+export type EmployeeBelbinResult = {
+    employeeId: number;
+    firstName: string;
+    lastName: string;
+    testDate: Date,
+    results: BelbinCategoryResult[];
+};
+
+export type BelbinCategoryResult = {
+    id: string;
+    name: string;
+    score: number;
+    description: string;
+};
 
 export type ExpiredBelbinTest = {
     userId: number;
@@ -39,4 +54,4 @@ export type ExpiredBelbinTest = {
     department: string[];
     expirationDate: string;
     lastTestDate?: string;
-}
+};
