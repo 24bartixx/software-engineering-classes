@@ -15,6 +15,10 @@ import { BelbinRolesMetadata } from './entities/belbin-roles-metadata.entity';
 
 import { EmailService } from 'src/common/email.service';
 import { BelbinConverter } from "./belbin.converter";
+import { Notification } from "./entities/notification.entity";
+import { NotificationSending } from "./entities/notification-sending.entity";
+import { EmployeeBranch } from "src/employee-branch/entities/employee-branch.entity";
+import { Branch } from "src/branches/entities/branch.entity";
 
 @Module({
   imports: [
@@ -27,6 +31,10 @@ import { BelbinConverter } from "./belbin.converter";
       Employee,
       User,
       Address,
+      Notification,
+      NotificationSending,
+      EmployeeBranch,
+      Branch,
     ]),
   ],
   controllers: [BelbinController],

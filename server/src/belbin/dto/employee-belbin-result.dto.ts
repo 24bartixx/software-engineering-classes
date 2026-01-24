@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import {IsDateString, IsNumber, IsString } from "class-validator";
+import {IsBoolean, IsDateString, IsNumber, IsString } from "class-validator";
 
 export class BelbinCategoryResult {
     @ApiProperty({ description: 'The ID of the Belbin category' })
@@ -38,4 +38,10 @@ export class EmployeeBelbinResultDto {
 
     @ApiProperty({ description: 'The results of the Belbin test', type: [Object] })
     results: BelbinCategoryResult[];
+
+    @ApiProperty({ description: 'It indicates whether sending notifications is blocked or not. ' +
+            'It is blocked when the notification was sent some time ago (the time is specified in the configuration) ' +
+            'or the test expiration date is not close.' })
+    @IsBoolean()
+    isReminderBlocked: boolean;
 }

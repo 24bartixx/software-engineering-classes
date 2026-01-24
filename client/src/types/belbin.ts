@@ -27,6 +27,7 @@ export type EmployeeBelbinResult = {
     lastName: string;
     testDate: Date,
     results: BelbinCategoryResult[];
+    isReminderBlocked: boolean;
 };
 
 export type BelbinCategoryResult = {
@@ -42,4 +43,5 @@ export type ExpiredBelbinTest = {
     lastName: string;
     departments: string[];
     testExpirationDate: Date;
+    isReminderBlocked: boolean;
 };

@@ -7,7 +7,7 @@ import {BelbinCategoryResult, EmployeeBelbinResultDto } from "./dto/employee-bel
 
 @Injectable()
 export class BelbinConverter {
-    mapToExpiredDto(test: BelbinTest, validityDays: number): ExpiredBelbinTestDto {
+    mapToExpiredDto(test: BelbinTest, validityDays: number, reminderBlockedMap: Map<number, boolean>): ExpiredBelbinTestDto {
         const currentDepartments = test.employee.departmentsHistory
             .filter(dh => dh.stoppedAt === null)
             .map(dh => dh.department.name);
@@ -18,10 +18,11 @@ export class BelbinConverter {
             lastName: test.employee.user.last_name,
             departments: currentDepartments,
             testExpirationDate: addDays(test.performedAt, validityDays),
+            isReminderBlocked: reminderBlockedMap.get(test.employee.user.user_id) || false
         };
     }
 
-    mapToBelbinResultDto(test: BelbinTest, metadata: BelbinRolesMetadata[]): EmployeeBelbinResultDto {
+    mapToBelbinResultDto(test: BelbinTest, metadata: BelbinRolesMetadata[], isReminderBlocked: boolean): EmployeeBelbinResultDto {
         const testResults: BelbinCategoryResult[] = metadata.map(roleMetadata => ({
             id: roleMetadata.id,
             name: roleMetadata.name,
@@ -35,6 +36,7 @@ export class BelbinConverter {
             lastName: test.employee.user.last_name,
             testDate: test.performedAt,
             results: testResults,
+            isReminderBlocked: isReminderBlocked,
         };
     }
 }

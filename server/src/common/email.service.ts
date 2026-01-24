@@ -32,12 +32,12 @@ export class EmailService {
     }
   }
 
-  async sendExpiredTestNotification(email: string, expirationDate: string) {
+  async sendExpiredTestNotification(email: string, title: string, expirationDate: string) {
       const mailOptions = {
           from: process.env.EMAIL_USER,
           to: email,
-          subject: 'TeamBuilder - Expired Belbin Test',
-          html: `<p>Your Belbin Test has expired! <b>Test expiration date: ${expirationDate}</b> Take the test again as soon as possible.</p>`,
+          subject: `TeamBuilder - ${title}`,
+          html: `<p>Your Belbin Test has expired or is about to expire! <b>Test expiration date: ${expirationDate}</b> Please take the test again as soon as possible.</p>`,
       };
 
       try {

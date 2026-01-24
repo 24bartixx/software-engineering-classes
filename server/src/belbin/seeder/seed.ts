@@ -1,12 +1,17 @@
-import { DataSource, QueryRunner } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Employee } from '../../employee/entities/employee.entity';
-import { Department } from '../../department/entities/department.entity';
-import { EmployeeDepartment } from '../../employee-department/entities/employee-department.entity';
-import { BelbinTest } from '../entities/belbin-test.entity';
-import { Address } from 'src/addresses/entities/address.entity';
-import { SystemConfigService } from 'src/system-config/system-config.service';
-import { SystemConfigKeysEnum } from 'src/common/enum/system-config-keys.enum';
+import {DataSource, QueryRunner} from 'typeorm';
+import {User} from '../../users/entities/user.entity';
+import {Employee} from '../../employee/entities/employee.entity';
+import {Department} from '../../department/entities/department.entity';
+import {EmployeeDepartment} from '../../employee-department/entities/employee-department.entity';
+import {BelbinTest} from '../entities/belbin-test.entity';
+import {Notification} from '../entities/notification.entity';
+import {Address} from 'src/addresses/entities/address.entity';
+import {SystemConfigService} from 'src/system-config/system-config.service';
+import {SystemConfigKeys} from 'src/common/enum/system-config-keys.enum';
+import {NotificationType} from "../../common/enum/notification-type.enum";
+import { EmployeeBranch } from "src/employee-branch/entities/employee-branch.entity";
+import { Branch } from "src/branches/entities/branch.entity";
+import {NotificationSending} from "../entities/notification-sending.entity";
 
 const employeesData = [
   {
@@ -61,6 +66,63 @@ const employeesData = [
       completer: 2,
     },
   },
+    {
+        firstName: 'Sarah',
+        lastName: 'Jenkins',
+        email: 'sarah.j.dev@example.com',
+        gender: 'Female',
+        deptIndexes: [1, 4],
+        testDate: '2023-11-15',
+        belbin: {
+            shaper: 12,
+            implementer: 10,
+            specialist: 2,
+            coordinator: 4,
+            plant: 3,
+            resource: 6,
+            monitor: 5,
+            team: 8,
+            completer: 11,
+        },
+    },
+    {
+        firstName: 'Tomasz',
+        lastName: 'Kowalski',
+        email: 't.kowalski@firma.pl',
+        gender: 'Male',
+        deptIndexes: [2],
+        testDate: '2019-03-10',
+        belbin: {
+            shaper: 14,
+            implementer: 3,
+            specialist: 5,
+            coordinator: 2,
+            plant: 11,
+            resource: 8,
+            monitor: 4,
+            team: 1,
+            completer: 3,
+        },
+    },
+    {
+        firstName: 'Emily',
+        lastName: 'Chen',
+        email: 'emily.chen@work.net',
+        gender: 'Female',
+        deptIndexes: [3, 5],
+        testDate: '2025-08-04',  // close to expiration
+        belbin: {
+            shaper: 2,
+            implementer: 4,
+            specialist: 9,
+            coordinator: 11,
+            plant: 5,
+            resource: 12,
+            monitor: 3,
+            team: 6,
+            completer: 4,
+        },
+    }
 ];
 
 export async function seed(systemConfigService: SystemConfigService) {
@@ -77,7 +139,11 @@ export async function seed(systemConfigService: SystemConfigService) {
       Employee,
       Department,
       EmployeeDepartment,
+      EmployeeBranch,
+      Branch,
       BelbinTest,
+      Notification,
+      NotificationSending,
     ],
     synchronize: true,
   });
@@ -88,10 +154,33 @@ export async function seed(systemConfigService: SystemConfigService) {
   try {
     console.log('Rozpoczynam seedowanie...');
 
-    systemConfigService.set(
-      SystemConfigKeysEnum.BELBIN_TEST_VALIDITY_DAYS,
-      '180',
+    await systemConfigService.set(
+        SystemConfigKeys.BELBIN_TEST_VALIDITY_DAYS,
+        '180',
     );
+    await systemConfigService.set(
+        SystemConfigKeys.REMINDER_COOLDOWN_DAYS,
+        '3'
+    );
+    await systemConfigService.set(
+        SystemConfigKeys.EXPIRED_TEST_NOTIFICATION_TITLE,
+        'Expired Belbin Test'
+    );
+    await systemConfigService.set(
+        SystemConfigKeys.EXPIRED_TEST_NOTIFICATION_TYPE,
+        NotificationType.Mail
+    );
+    await systemConfigService.set(
+        SystemConfigKeys.REMINDER_DAYS_TO_TEST_EXPIRATION_DATE,
+        '7'
+    );
+
+    const notification = new Notification();
+    notification.title = await systemConfigService.getOrThrow(SystemConfigKeys.EXPIRED_TEST_NOTIFICATION_TITLE);
+    const notificationTypeString = await systemConfigService.getOrThrow(SystemConfigKeys.EXPIRED_TEST_NOTIFICATION_TYPE);
+    notification.notificationType = NotificationType[notificationTypeString];
+    await queryRunner.manager.save(notification);
+    console.log('Powiadomienie (rodzaj) dodane.');
 
     const address = new Address();
     address.country = 'Poland';

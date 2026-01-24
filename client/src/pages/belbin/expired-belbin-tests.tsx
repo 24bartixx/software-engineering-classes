@@ -19,6 +19,12 @@ export default function ExpiredTestsView() {
 
     const formatDate = (date: Date) => new Date(date).toLocaleDateString();
 
+    const shouldDisableButton = (test: ExpiredBelbinTest) => {
+        if (sendingMap[test.employeeId]) return true;
+        if (remindedUserIds.has(test.employeeId)) return true;
+        return test.isReminderBlocked;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -105,16 +111,16 @@ export default function ExpiredTestsView() {
 
                                                 <button
                                                     onClick={() => handleSendReminder(test)}
-                                                    disabled={remindedUserIds.has(test.employeeId) || sendingMap[test.employeeId]}
+                                                    disabled={shouldDisableButton(test)}
                                                     className={`px-3 py-1.5 text-xs font-medium rounded transition-colors border ${
-                                                        sendingMap[test.employeeId] || remindedUserIds.has(test.employeeId)
+                                                        shouldDisableButton(test)
                                                             ? 'bg-gray-200 text-gray-400 border-gray-200 cursor-not-allowed' 
                                                             : 'bg-white text-slate-900 border-slate-900 hover:bg-gray-50'
                                                     }`}
                                                 >
                                                     {sendingMap[test.employeeId] ? 'Wysyłanie...'
-                                                        : remindedUserIds.has(test.employeeId) ? 'Przypomnienie wysłane' :
-                                                            'Wyślij przypomnienie'}
+                                                        : (remindedUserIds.has(test.employeeId) || test.isReminderBlocked) ?
+                                                            'Przypomnienie wysłane' : 'Wyślij przypomnienie'}
                                                 </button>
                                             </div>
                                         </td>

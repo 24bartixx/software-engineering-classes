@@ -37,7 +37,7 @@ export const getTestResults = async (employeeId: number) => {
 
 export const sendReminderNotification = async (employeeId: number) => {
     const response = await axios.post(
-        `${API_BASE_URL}/belbin/notify-expired/${employeeId}`
+        `${API_BASE_URL}/belbin/notify/expired/${employeeId}`
     );
     return response.data;
 };
