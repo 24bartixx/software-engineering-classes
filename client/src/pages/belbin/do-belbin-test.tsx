@@ -78,8 +78,7 @@ export default function DoBelbinTest() {
         setIsSubmitting(true);
         try {
             await sendBelbinTestAnswers(Number(employeeId), answers);
-            addNotification('success', "Test zakończony pomyślnie! Przekierowywanie...");
-            setTimeout(() => navigate(`/belbin/results/${employeeId}`), 2000);
+            navigate(`/belbin/results/${employeeId}`);
         } catch (error: any) {
             console.error("Błąd przy zapisywaniu wynikow testu: ", error);
             const msg = error.response?.data?.message || "Błąd zapisu wyników testu.";

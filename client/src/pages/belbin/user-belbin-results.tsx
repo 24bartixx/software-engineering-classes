@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import PageCard from '../../components/page-card';
 import BelbinReportBody from '../../components/belbin-results-body';
 import {useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import BackButton from "../../components/back-button";
 
 export default function UserBelbinResults() {
     const { employeeId } = useParams<{ employeeId: string }>();
+    const navigate = useNavigate();
 
     const [data, setData] = useState<EmployeeBelbinResult | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +57,7 @@ export default function UserBelbinResults() {
                 <PageCard>
                     <div className="p-6">
                         <div className="mb-8">
-                            <BackButton label='Powrót do profilu'/>
+                            <BackButton label='Powrót do profilu' onClick={() => navigate("/belbin/dashboard")}/>
                             <h1 className="text-2xl font-bold text-gray-900 mb-1">Twoje Role Zespołowe Belbina</h1>
                             <p className="text-sm text-gray-400">{data.firstName} {data.lastName}</p>
                             {<p className="text-sm text-gray-400">Test wykonano: {formattedDate}</p>}

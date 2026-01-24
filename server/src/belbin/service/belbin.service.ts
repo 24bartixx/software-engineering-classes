@@ -94,7 +94,7 @@ export class BelbinService {
         const testValidityDays = await this.getTestValidityDays();
         const { status, expirationDate } = this.calculateTestStatus(employee.belbinTest, testValidityDays);
         if (status === BelbinTestStatus.NOT_STARTED || !expirationDate) {
-            throw new BadRequestException(`Nie znaleziono testu Belbina dla pracownika o ID ${employeeId}`);
+            throw new NotFoundException(`Nie znaleziono testu Belbina dla pracownika o ID ${employeeId}`);
         }
 
         await this.notificationService.sendReminder(employee, expirationDate);
