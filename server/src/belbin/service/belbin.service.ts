@@ -1,22 +1,20 @@
 import {BadRequestException, Inject, Injectable, NotFoundException} from '@nestjs/common';
-import {BelbinQuestion} from "./entities/belbin-question.entity";
-import {DataSource, In, LessThan, MoreThan, Repository} from "typeorm";
+import {BelbinQuestion} from "../entities/belbin-question.entity";
+import {LessThan, Repository} from "typeorm";
 import {InjectRepository} from "@nestjs/typeorm";
 import {addDays, isBefore, subDays} from 'date-fns';
-import {ExpiredBelbinTestDto} from "./dto/expired-belbin-test.dto";
-import {EmployeeBelbinResultDto} from "./dto/employee-belbin-result.dto";
+import {ExpiredBelbinTestDto} from "../dto/expired-belbin-test.dto";
+import {EmployeeBelbinResultDto} from "../dto/employee-belbin-result.dto";
 import {SystemConfigService} from "src/system-config/system-config.service";
-import {BelbinTest} from "./entities/belbin-test.entity";
+import {BelbinTest} from "../entities/belbin-test.entity";
 import {SystemConfigKeys} from "src/common/enum/system-config-keys.enum";
-import {BelbinRolesMetadata} from "./entities/belbin-roles-metadata.entity";
-import {BelbinTestStatus, EmployeeTestStatusDto} from "./dto/employee-test-status.dto";
+import {BelbinRolesMetadata} from "../entities/belbin-roles-metadata.entity";
+import {BelbinTestStatus, EmployeeTestStatusDto} from "../dto/employee-test-status.dto";
 import {Employee} from "src/employee/entities/employee.entity";
-import {EmailService} from "src/common/email.service";
-import {BelbinTestAnswersDto} from "./dto/belbin-test-answers.dto";
-import {BelbinConverter} from "./belbin.converter";
-import {Notification} from "./entities/notification.entity";
-import {NotificationSending} from "./entities/notification-sending.entity";
-import {NotificationType} from "src/common/enum/notification-type.enum";
+import {BelbinTestAnswersDto} from "../dto/belbin-test-answers.dto";
+import {BelbinConverter} from "../belbin.converter";
+import { BelbinNotificationService } from "./belbin-notification.service";
+import { BelbinScoreCalculator } from "./belbin-score-calculator.service";
 
 @Injectable()
 export class BelbinService {
@@ -29,18 +27,10 @@ export class BelbinService {
         private belbinRolesMetadataRepository: Repository<BelbinRolesMetadata>,
         @InjectRepository(Employee)
         private employeeRepository: Repository<Employee>,
-        @InjectRepository(NotificationSending)
-        private notificationSendingRepository: Repository<NotificationSending>,
-        @InjectRepository(Notification)
-        private notificationRepository: Repository<Notification>,
-        @Inject()
-        private systemConfigService: SystemConfigService,
-        @Inject()
-        private emailService: EmailService,
-        @Inject()
-        private belbinConverter: BelbinConverter,
-        @Inject()
-        private dataSource: DataSource,
+        @Inject() private notificationService: BelbinNotificationService,
+        @Inject() private scoreCalculator: BelbinScoreCalculator,
+        @Inject() private systemConfigService: SystemConfigService,
+        @Inject() private belbinConverter: BelbinConverter,
     ) {}
 
     async getBelbinQuestions(): Promise<BelbinQuestion[]> {
@@ -55,7 +45,7 @@ export class BelbinService {
             relations: ['employee', 'employee.user', 'employee.departmentsHistory', 'employee.departmentsHistory.department'],
         })
         const userIds = expiredTests.map(test => test.employee.user.user_id);
-        const reminderBlockedMap = await this.getNotificationBasedReminderBlockedMap(userIds);
+        const reminderBlockedMap = await this.notificationService.getReminderBlockedMap(userIds);
         return expiredTests.map(test => this.belbinConverter.mapToExpiredDto(test, testValidityDays, reminderBlockedMap));
     }
 
@@ -70,7 +60,7 @@ export class BelbinService {
         const belbinRolesMetadata = await this.belbinRolesMetadataRepository.find();
 
         const isBlockedByStatus = await this.isRemindBlockedByStatus(belbinTest);
-        const notificationBlockedMap = await this.getNotificationBasedReminderBlockedMap([belbinTest.employee.user.user_id]);
+        const notificationBlockedMap = await this.notificationService.getReminderBlockedMap([belbinTest.employee.user.user_id]);
         const isBlockedByNotifications = notificationBlockedMap.get(belbinTest.employee.user.user_id) || false;
         const finalIsBlocked = isBlockedByStatus || isBlockedByNotifications;
         return this.belbinConverter.mapToBelbinResultDto(belbinTest, belbinRolesMetadata, finalIsBlocked);
@@ -107,22 +97,7 @@ export class BelbinService {
             throw new BadRequestException(`Nie znaleziono testu Belbina dla pracownika o ID ${employeeId}`);
         }
 
-        await this.dataSource.transaction(async (manager) => {
-            const title = await this.getExpiredTestNotificationTitle();
-            const type = await this.getExpiredTestNotificationType();
-            const notification = await manager.findOneOrFail(Notification, {
-                where: {
-                    title: title,
-                    notificationType: type,
-                }
-            });
-            const sending = new NotificationSending();
-            sending.userId = employee.user.user_id;
-            sending.notificationId = notification.id;
-            sending.pushedAt = new Date();
-            await manager.save(sending);
-            await this.emailService.sendExpiredTestNotification(employee.user.email, title, expirationDate.toLocaleDateString());
-        });
+        await this.notificationService.sendReminder(employee, expirationDate);
         return { message: 'The notification about expired belbin test sent!' };
     }
 
@@ -132,21 +107,18 @@ export class BelbinService {
             throw new NotFoundException(`Pracownik o ID ${testAnswersDto.id} nie istnieje`);
         }
 
-        const allQuestions = await this.belbinQuestionRepository.find();
-        const questionToRoleFieldMap = this.createQuestionToFieldMap(allQuestions);
-
-        const newBelbinTest = new BelbinTest();
-        newBelbinTest.employee = employee;
-        newBelbinTest.performedAt = new Date();
-        this.calculateScores(newBelbinTest, testAnswersDto.answers, questionToRoleFieldMap);
-
-        const existingTest = await this.belbinTestRepository.findOne({
+        let belbinTest = await this.belbinTestRepository.findOne({
             where: { employee: { id: employee.id } }
         });
-        if (existingTest) {
-            await this.belbinTestRepository.remove(existingTest);
+        if (!belbinTest) {
+            belbinTest = new BelbinTest();
+            belbinTest.employee = employee;
         }
-        return await this.belbinTestRepository.save(newBelbinTest);
+
+        const allQuestions = await this.belbinQuestionRepository.find();
+        this.scoreCalculator.calculate(belbinTest, testAnswersDto.answers, allQuestions);
+        belbinTest.performedAt = new Date();
+        return await this.belbinTestRepository.save(belbinTest);
     }
 
     private async isRemindBlockedByStatus(belbinTest: BelbinTest): Promise<boolean> {
@@ -163,50 +135,10 @@ export class BelbinService {
         return now < remindAllowedDate;
     }
 
-    private async getNotificationBasedReminderBlockedMap(userIds: number[]): Promise<Map<number, boolean>> {
-        const cooldownDays = await this.getReminderCooldownDays();
-        const thresholdDate = subDays(new Date(), cooldownDays);
-        const expiredNotificationTitle = await this.getExpiredTestNotificationTitle();
-        const expiredNotificationType = await this.getExpiredTestNotificationType();
-
-        const recentSends = await this.notificationSendingRepository.find({
-            where: {
-                user: { user_id: In(userIds) },
-                pushedAt: MoreThan(thresholdDate),
-                notification: {
-                    title: expiredNotificationTitle,
-                    notificationType: expiredNotificationType
-                }
-            },
-            relations: ['notification'],
-            select: ['userId']
-        });
-
-        const blockerUserIds = new Set(recentSends.map(ns => ns.userId));
-        const result = new Map<number, boolean>();
-        userIds.forEach(id => result.set(id, blockerUserIds.has(id)));
-        return result;
-    }
-
     private async getTestValidityDays(): Promise<number> {
         const testValidityDaysString = await this.systemConfigService
             .getOrThrow(SystemConfigKeys.BELBIN_TEST_VALIDITY_DAYS);
         return parseInt(testValidityDaysString, 10);
-    }
-
-    private async getReminderCooldownDays(): Promise<number> {
-        const reminderCooldownDaysString = await this.systemConfigService
-            .getOrThrow(SystemConfigKeys.REMINDER_COOLDOWN_DAYS);
-        return parseInt(reminderCooldownDaysString, 10);
-    }
-
-    private async getExpiredTestNotificationTitle(): Promise<string> {
-        return await this.systemConfigService.getOrThrow(SystemConfigKeys.EXPIRED_TEST_NOTIFICATION_TITLE);
-    }
-
-    private async getExpiredTestNotificationType(): Promise<NotificationType> {
-        const typeString = await this.systemConfigService.getOrThrow(SystemConfigKeys.EXPIRED_TEST_NOTIFICATION_TYPE);
-        return NotificationType[typeString];
     }
 
     private async getDaysToExpirationDateWhenMayRemind() {
@@ -228,27 +160,5 @@ export class BelbinService {
             : BelbinTestStatus.COMPLETED;
 
         return { status, lastTestDate, expirationDate };
-    }
-
-    private createQuestionToFieldMap(questions: BelbinQuestion[]): Map<string, keyof BelbinTest> {
-        const map = new Map<string, keyof BelbinTest>();
-        questions.forEach(section => {
-            section.statements.forEach(statement => {
-                map.set(statement.id, statement.relatedRoleFieldName as keyof BelbinTest);
-            });
-        });
-        return map;
-    }
-
-    private calculateScores(test: BelbinTest, answers: Record<string, number>, fieldMap: Map<string, keyof BelbinTest>) {
-        for (const [questionId, points] of Object.entries(answers)) {
-            const targetScoreFieldName = fieldMap.get(questionId);
-            if (targetScoreFieldName) {
-                const currentScore = (test as any)[targetScoreFieldName] || 0;
-                test[targetScoreFieldName] = currentScore + points;
-            } else {
-                console.warn(`Otrzymano nieznane ID pytania: ${questionId}`);
-            }
-        }
     }
 }

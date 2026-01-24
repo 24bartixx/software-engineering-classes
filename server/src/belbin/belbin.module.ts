@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { BelbinController } from './belbin.controller';
-import { BelbinService } from './belbin.service';
+import { BelbinService } from './service/belbin.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BelbinQuestion } from './entities/belbin-question.entity';
 import { BelbinSeeder } from './seeder/belbin-flow.seeder';
@@ -19,6 +19,8 @@ import { Notification } from "./entities/notification.entity";
 import { NotificationSending } from "./entities/notification-sending.entity";
 import { EmployeeBranch } from "src/employee-branch/entities/employee-branch.entity";
 import { Branch } from "src/branches/entities/branch.entity";
+import { BelbinNotificationService } from "./service/belbin-notification.service";
+import { BelbinScoreCalculator } from "./service/belbin-score-calculator.service";
 
 @Module({
   imports: [
@@ -38,6 +40,6 @@ import { Branch } from "src/branches/entities/branch.entity";
     ]),
   ],
   controllers: [BelbinController],
-  providers: [BelbinService, BelbinQuestionSeeder, BelbinSeeder, EmailService, BelbinConverter],
+  providers: [BelbinService, BelbinQuestionSeeder, BelbinSeeder, EmailService, BelbinConverter, BelbinNotificationService, BelbinScoreCalculator],
 })
 export class BelbinModule {}

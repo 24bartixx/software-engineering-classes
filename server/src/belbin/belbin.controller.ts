@@ -1,5 +1,5 @@
 import {Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import {BelbinService} from "./belbin.service";
+import {BelbinService} from "./service/belbin.service";
 import { BelbinQuestion } from "./entities/belbin-question.entity";
 import { ExpiredBelbinTestDto } from "./dto/expired-belbin-test.dto";
 import { EmployeeBelbinResultDto } from "./dto/employee-belbin-result.dto";
