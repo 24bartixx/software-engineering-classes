@@ -16,6 +16,7 @@ import Home from "./pages/home/home";
 import FailedActivation from "./pages/users/failed-activation";
 import EditUser from "./pages/users/edit-user";
 import EditAddress from "./pages/users/edit-address";
+import HrBelbinDashboard from "./pages/belbin/hr-belbin-dashboard";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: "belbin/dashboard", element: <BelbinDashboard /> },
       { path: "hr/belbin/expired", element: <ExpiredTestsView /> },
       { path: "hr/belbin/results/:employeeId", element: <MangerBelbinPreview /> },
+      { path: "hr/belbin/dashboard", element: <HrBelbinDashboard /> },
     ],
   },
 ]);

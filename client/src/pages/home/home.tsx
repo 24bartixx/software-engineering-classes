@@ -19,6 +19,9 @@ export default function Home() {
       <Link title="Go to expired belbin tests for hr" to="/hr/belbin/expired">
         Przeterminowane testy Belbina
       </Link>
+      <Link title="Go to belbin dashboard for hr" to="/hr/belbin/dashboard">
+          HR Belbin dashboard
+      </Link>
     </PageCard>
   );
 }
