@@ -1,0 +1,166 @@
+classDiagram
+%% --- API LAYER ---
+    class BelbinController {
+        +getExpiredBelbinTests()
+        +sendReminderNotification(employeeId: int)
+        +getBelbinQuestions()
+        +provideEmployeeTestAnswers(dto: BelbinTestAnswersDto)
+        +getEmployeeTestResults(employeeId: int)
+    }
+
+%% --- SERVICE LAYER ---
+    class BelbinService {
+        +getExpiredBelbinTests()
+        +sendNotification(employeeId: int)
+        +getBelbinQuestions()
+        +saveTestResults(dto: BelbinTestAnswersDto)
+        +getEmployeeTestResults(employeeId: int)
+        -calculateTestStatus(belbinTest: BelbinTest, validityDays: int)
+    }
+
+    class BelbinScoreCalculator {
+        +calculate(test: BelbinTest, answers: Map, questions: BelbinQuestion[])
+        -createQuestionToFieldMap(questions: BelbinQuestion[])
+        -resetScores(test: BelbinTest)
+    }
+
+    class BelbinNotificationService {
+        +sendReminder(employee: Employee)
+        +getReminderBlockedMap(userIds: int[])
+    }
+
+    class BelbinConverter {
+        +mapToBelbinResultDto(test: BelbinTest, metadata: BelbinRolesMetadata[], isBlocked: boolean)
+        +mapToExpiredDto(test: BelbinTest, validityDays: int, reminderBlockedMap: Map)
+    }
+
+    class EmailService {
+        +sendExpiredTestNotification(to: string, title: string, expirationDate: string)
+    }
+
+    class SystemConfigService {
+        +getConfig(string key)
+    }
+
+%% --- DATA ACCESS LAYER ---
+    class BelbinTestRepository {
+        +save(entity: BelbinTest)
+        +findOne(options)
+    }
+
+    class BelbinQuestionRepository {
+        +find(options)
+    }
+
+    class BelbinRolesMetadataRepository {
+        +find(options)
+    }
+
+    class EmployeeRepository {
+        +find(options)
+        +findOne(options)
+    }
+
+    class NotificationRepository {
+        +findOne(options)
+        +save(entity)
+    }
+
+    class NotificationSendingRepository {
+        +find(options)
+        +save(entity)
+    }
+
+%% --- ENTITIES ---
+    class BelbinTest {
+        +id: int
+        +performedAt: Date
+        +shaperScore: int
+        +specialistScore: int
+        +plantScore: int
+        +monitorEvaluatorScore: int
+        +completerFinisherScore: int
+        +resourceInvestigatorScore: int
+        +coordinatorScore: int
+        +teamWorkerScore: int
+        +implementerScore: int
+    }
+
+    class BelbinQuestion {
+        +id: int
+        +content: string
+        +statements: Statement[]
+    }
+
+    class Statement {
+        +id: string
+        +text: string
+        +relatedRoleFieldName: string
+    }
+
+    class BelbinRolesMetadata {
+        +property: string
+        +id: string
+        +name: string
+        +description: string
+    }
+
+    class Employee {
+        +id: int
+        +employedAt: Date
+        +firedAt: Date
+    }
+
+    class User {
+        id: int
+        firstName: string
+        lastName: string
+        email: string
+        gender: string
+        phoneNumber: string
+        birthdayDate: Date
+        isActivated: boolean
+    }
+
+    class Notification {
+        +id: string
+        +title: string
+        +content: string
+        +type: NotificationType
+    }
+
+    class NotificationSending {
+        +userId: int
+        +notificationId: int
+        +pushedAt: Date
+    }
+
+%% --- RELATIONS ---
+    BelbinController ..> BelbinService : uses
+    BelbinService ..> BelbinScoreCalculator : uses
+    BelbinService ..> BelbinConverter : uses
+    BelbinService ..> SystemConfigService : uses
+    BelbinService ..> BelbinNotificationService : uses
+
+    BelbinService --> BelbinTestRepository : uses
+    BelbinService --> BelbinQuestionRepository : uses
+    BelbinService --> EmployeeRepository : uses
+    BelbinService --> BelbinRolesMetadataRepository : uses
+
+    BelbinNotificationService ..> SystemConfigService : uses
+    BelbinNotificationService ..> EmailService : uses
+    BelbinNotificationService --> NotificationRepository : uses
+    BelbinNotificationService --> NotificationSendingRepository : uses
+
+    BelbinTestRepository --> BelbinTest : manages
+    BelbinQuestionRepository --> BelbinQuestion : manages
+    BelbinRolesMetadataRepository --> BelbinRolesMetadata : manages
+    EmployeeRepository --> Employee : manages
+    NotificationRepository --> Notification : manages
+    NotificationSendingRepository --> NotificationSending : manages
+
+    BelbinQuestion "1" -- "*" Statement : has
+    Employee "1" -- "0..1" BelbinTest : has
+    Employee "1" -- "1" User : corresponds to
+    Notification "1" -- "*" NotificationSending : has
+    User "1" -- "*" NotificationSending : has
