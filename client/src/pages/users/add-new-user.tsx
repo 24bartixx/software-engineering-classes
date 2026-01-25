@@ -80,15 +80,38 @@ export default function AddNewUser() {
   const addressScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    console.log("location.state:", location.state);
     if (location.state?.address) {
       setAddress(location.state.address);
     }
-    console.log(sessionStorage.getItem("fromAddAddress"));
+
     const fromAddAddress = sessionStorage.getItem("fromAddAddress") === "true";
     if (fromAddAddress) {
       setShouldAnimate(true);
       sessionStorage.removeItem("fromAddAddress");
+    }
+
+    // Restore form data from sessionStorage
+    const savedFormData = sessionStorage.getItem("addUserFormData");
+    if (savedFormData) {
+      try {
+        const formData = JSON.parse(savedFormData);
+        setFirstName(formData.firstName || "");
+        setLastName(formData.lastName || "");
+        setEmail(formData.email || "");
+        setGender(formData.gender || null);
+        setPhoneDial(formData.phoneDial || "+48");
+        setPhoneNumber(formData.phoneNumber || "");
+        setBirthDate(formData.birthDate || "");
+        setSystemRole(
+          formData.systemRole ||
+            systemRoleOptions.find((role) => role.value === "employee") ||
+            null,
+        );
+        setDepartments(formData.departments || []);
+        setBranches(formData.branches || []);
+      } catch (err) {
+        console.error("Failed to restore form data:", err);
+      }
     }
   }, [location]);
 
@@ -373,9 +396,26 @@ export default function AddNewUser() {
                 </div>
                 <button
                   type="button"
-                  onClick={() =>
-                    navigate("/users/add-address", { state: { address } })
-                  }
+                  onClick={() => {
+                    // Save form data to sessionStorage
+                    const formData = {
+                      firstName,
+                      lastName,
+                      email,
+                      gender,
+                      phoneDial,
+                      phoneNumber,
+                      birthDate,
+                      systemRole,
+                      departments,
+                      branches,
+                    };
+                    sessionStorage.setItem(
+                      "addUserFormData",
+                      JSON.stringify(formData),
+                    );
+                    navigate("/users/add-address", { state: { address } });
+                  }}
                   className="h-14 w-14 rounded-2xl border-1 border-black bg-white hover:bg-gray-50 active:scale-[0.99] flex items-center justify-center flex-shrink-0"
                 >
                   {address ? (
@@ -452,8 +492,6 @@ export default function AddNewUser() {
       </form>
     </PageCard>
   );
-
-  console.log(shouldAnimate);
 
   return shouldAnimate ? (
     <motion.div

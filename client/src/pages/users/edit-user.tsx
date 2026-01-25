@@ -66,6 +66,7 @@ export default function EditUser() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [restoredFromSession, setRestoredFromSession] = useState(false);
 
   const [isDraggingAddress, setIsDraggingAddress] = useState(false);
   const [addressStartX, setAddressStartX] = useState(0);
@@ -136,7 +137,31 @@ export default function EditUser() {
       }
     };
 
-    fetchUserData();
+    // Try to restore form data from sessionStorage first
+    const savedFormData = sessionStorage.getItem("editUserFormData");
+    
+    if (savedFormData) {
+      try {
+        const formData = JSON.parse(savedFormData);
+        setFirstName(formData.firstName || "");
+        setLastName(formData.lastName || "");
+        setEmail(formData.email || "");
+        setGender(formData.gender || null);
+        setPhoneDial(formData.phoneDial || "+48");
+        setPhoneNumber(formData.phoneNumber || "");
+        setBirthDate(formData.birthDate || "");
+        setDepartments(formData.departments || []);
+        setBranches(formData.branches || []);
+        setIsLoading(false);
+        setRestoredFromSession(true);
+      } catch (err) {
+        console.error("Failed to restore form data:", err);
+        // If restore fails, fetch from API
+        fetchUserData();
+      }
+    } else {
+      fetchUserData();
+    }
   }, [id]);
 
   useEffect(() => {
@@ -174,6 +199,9 @@ export default function EditUser() {
             setHasAddress(false);
             setAddress(null);
           }
+
+          // Clean up sessionStorage only after successfully refetching and updating
+          sessionStorage.removeItem("editUserFormData");
         } catch (err) {
           console.error("Failed to refetch user profile:", err);
         }
@@ -220,7 +248,14 @@ export default function EditUser() {
   // Set departments and branches after options are loaded and user data is fetched
   useEffect(() => {
     const fetchAndSetUserDepartmentsAndBranches = async () => {
-      if (!id || isLoadingDepartments || isLoadingBranches || isLoading) return;
+      if (
+        !id ||
+        isLoadingDepartments ||
+        isLoadingBranches ||
+        isLoading ||
+        restoredFromSession
+      )
+        return;
 
       try {
         const profile = await getUserProfile(Number.parseInt(id));
@@ -246,7 +281,15 @@ export default function EditUser() {
     };
 
     fetchAndSetUserDepartmentsAndBranches();
-  }, [id, isLoadingDepartments, isLoadingBranches, isLoading]);
+  }, [
+    id,
+    isLoadingDepartments,
+    isLoadingBranches,
+    isLoading,
+    restoredFromSession,
+    departmentOptions,
+    branchOptions,
+  ]);
 
   const formatAddress = (addr: Address) => {
     const parts = [
@@ -495,6 +538,22 @@ export default function EditUser() {
                 <button
                   type="button"
                   onClick={() => {
+                    // Save form data to sessionStorage
+                    const formData = {
+                      firstName,
+                      lastName,
+                      email,
+                      gender,
+                      phoneDial,
+                      phoneNumber,
+                      birthDate,
+                      departments,
+                      branches,
+                    };
+                    sessionStorage.setItem(
+                      "editUserFormData",
+                      JSON.stringify(formData),
+                    );
                     sessionStorage.setItem("fromEditUser", "true");
                     navigate(`/users/edit-address/${id}`, {
                       state: {
