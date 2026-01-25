@@ -1,0 +1,73 @@
+sequenceDiagram
+    actor User as Pracownik
+    participant FE as Frontend
+    participant BE as API Backend
+
+    Note over User, BE: Krok 1: Pobranie pytań
+    User->>FE: Inicjacja wykonania testu
+    activate FE
+    FE->>BE: Żądanie GET pobrania pytań
+    activate BE
+
+    alt Błąd pobierania lub brak pytań
+        BE-->>FE: 500 Error / [] (Pusta lista)
+        deactivate BE
+        FE->>User: Informacja o błędzie
+        deactivate FE
+    else Sukces (Pytania pobrane)
+        activate BE
+        activate FE
+        BE-->>FE: 200 OK (Lista pytań)
+        deactivate BE
+        FE->>User: Wyświetlenie testu
+        deactivate FE
+
+
+        Note over User, BE: Krok 2: Wypełnianie i wysyłanie wyników
+        User->>FE: Wykonanie testu i inicjacja zapisania
+        activate FE
+        FE->>FE: Walidacja lokalna (np. suma dla każdego pytania = 10 pkt)
+
+        alt Błąd walidacji lokalnej
+            FE->>User: Dokładna informacja o błędzie
+            deactivate FE
+        else Walidacja OK
+            activate FE
+            FE->>BE: Żądanie POST zapisania odpowiedzi testu
+            activate BE
+
+            alt Błąd zapisu (np. user nie istnieje, błąd serwera)
+                BE-->>FE: 404/500 Error
+                deactivate BE
+
+                FE->>User: Informacja o błędzie zapisu wyników
+                deactivate FE
+                Note right of User: Użytkownik pozostaje w widoku testu
+            else Sukces (Zapisano)
+                activate FE
+                activate BE
+                BE-->>FE: 201 Created
+                deactivate BE
+                FE->>User: Informacja o poprawnym zapisaniu wyników
+
+                Note over User, BE: Krok 3: Wyświetlenie wyników (Include)
+                FE->>FE: Przekierowanie do wyników testu
+                FE->>BE: Żądanie GET pobrania wyników testu dla pracownika
+                activate BE
+
+                alt Błąd pobierania wyników
+                    BE-->>FE: 404/500 Error
+                    deactivate BE
+                    FE->>User: Informacja o błędzie pobierania wyników
+                    deactivate FE
+                else Sukces
+                    activate FE
+                    activate BE
+                    BE-->>FE: 200 OK (Wyniki)
+                    deactivate BE
+                    FE->>User: Prezentacja wykresu ról i opisów wyników
+                    deactivate FE
+                end
+            end
+        end
+    end

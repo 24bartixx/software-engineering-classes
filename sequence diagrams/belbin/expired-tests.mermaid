@@ -1,0 +1,86 @@
+sequenceDiagram
+    actor HR as Pracownik (HR)
+    participant FE as Frontend
+    participant BE as API Backend
+    participant MAIL as Email System
+
+    Note over HR, MAIL: Scenariusz: Przeglądanie listy przeterminowanych testów
+    HR->>FE: Inicjacja wglądu w przeterminowane testy
+    activate FE
+    FE->>BE: Żądanie GET pobrania przeterminowanych testów
+    activate BE
+
+    alt Błąd pobierania
+        BE-->>FE: 500 Error
+        deactivate BE
+        FE->>HR: Prezentacja pustej tabeli z informacją o błędzie pobierania
+        deactivate FE
+    else Sukces
+        activate FE
+        activate BE
+        BE-->>FE: 200 OK (Lista z informcją o możliwości powiadamiania)
+        deactivate BE
+        FE->>HR: Prezentacja tabeli (akcje: podgląd testu, powiadamianie)
+        deactivate FE
+    end
+
+    Note over HR, MAIL: Scenariusz: Zobacz test Belbina pracownika (Extend)
+    Note right of HR: Akcja dostępna z poziomu Listy
+
+    HR->>FE: Inicjacja podglądu testu pracownika
+    activate FE
+    FE->>BE: Żądanie GET pobrania wyników testu dla pracownika
+    activate BE
+
+    alt Błąd pobierania wyników
+        BE-->>FE: 404/500 Error
+        deactivate BE
+        FE->>HR: Informacja o błędzie pobierania wyników
+        deactivate FE
+    else Sukces
+        activate FE
+        activate BE
+        BE-->>FE: 200 OK (Wyniki)
+        deactivate BE
+        FE->>HR: Prezentacja wykresu ról, wyników i panelu akcji HR
+        deactivate FE
+    end
+
+    Note over HR, MAIL: Scenariusz: Wysyłanie przypomnienia (Extend)
+    Note right of HR: Akcja dostępna z poziomu Listy ORAZ Podglądu
+    HR->>FE: Inicjacja wysłania przypomnienia
+    activate FE
+    FE->>HR: Informacja o wysyłaniu
+    FE->>BE: Żądanie POST wysłania powiadomienia do pracownika
+    activate BE
+
+    alt Błąd (np. pracownik, test nie istnieje lub blokada logiczna - niedawno wysłane)
+        BE-->>FE: 400/404/500 Error
+        deactivate BE
+        FE->>HR: Dokładna informacja o błędzie przetwarzania
+        deactivate FE
+    else Walidacja OK: Próba wysłania
+        activate FE
+        activate BE
+        BE->>MAIL: Wyślij e-mail
+        activate MAIL
+
+        alt Błąd serwera pocztowego
+            MAIL-->>BE: Error
+            deactivate MAIL
+            BE-->>FE: 500 Error
+            deactivate BE
+            FE->>HR: Informacja o błędzie wysyłania powiadomienia
+            deactivate FE
+        else E-mail wysłany
+            activate MAIL
+            activate BE
+            activate FE
+            MAIL-->>BE: OK
+            deactivate MAIL
+            BE-->>FE: 200 OK
+            deactivate BE
+            FE->>HR: Trwała informacja o poprawnym wysłaniu powiadomienia
+            deactivate FE
+        end
+    end
