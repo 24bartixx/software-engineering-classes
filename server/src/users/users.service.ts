@@ -75,7 +75,7 @@ export class UsersService {
       relations: ['address'],
     });
 
-    if (!user)
+    if (!user || !user.isactivated)
       throw new NotFoundException(`Użytkownik o ID ${id} nie istnieje`);
 
     let systemRole = 'Employee';
