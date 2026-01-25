@@ -98,7 +98,7 @@ export class BelbinService {
         }
 
         await this.notificationService.sendReminder(employee, expirationDate);
-        return { message: 'The notification about expired belbin test sent!' };
+        return { message: 'Powiadomienie o przeterminowanym teście Belbina zostało pomyślnie wysłane!' };
     }
 
     async saveTestResults(testAnswersDto: BelbinTestAnswersDto) {
