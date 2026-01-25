@@ -28,7 +28,7 @@ import { ProjectManagerModule } from './project-managers/project-manager.module'
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE || 'teambuilder',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
     }),
     SystemConfigModule,
     AuthModule,

@@ -22,6 +22,16 @@ export class AuthController {
   @Post('create-account')
   async createAccount(@Body() createUserDto: CreateUserAuthDto) {
     const email = createUserDto.email;
+
+    // Check if user with the same email already exists
+    const emailExists = await this.authService.emailExists(email);
+    if (emailExists) {
+      throw new HttpException(
+        'User with this email already exists',
+        HttpStatus.CONFLICT,
+      );
+    }
+
     const token = jwt.sign({ email: email }, 'your-secret-key', {
       expiresIn: '3m',
     });

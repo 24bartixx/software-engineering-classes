@@ -17,6 +17,9 @@ import FailedActivation from "./pages/users/failed-activation";
 import EditUser from "./pages/users/edit-user";
 import EditAddress from "./pages/users/edit-address";
 import HrBelbinDashboard from "./pages/belbin/hr-belbin-dashboard";
+import SuccessfulUserAddition from "./pages/users/successful-user-addition";
+import FailedEmailInUse from "./pages/users/failed-email-in-use";
+import FailedGeneral from "./pages/failed-general";
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +31,18 @@ export const router = createBrowserRouter([
       { path: "edit-user/:id", element: <EditUser /> },
       { path: "users/add-address", element: <AddAddress /> },
       { path: "users/edit-address/:id", element: <EditAddress /> },
+      {
+        path: "users/successful-addition",
+        element: <SuccessfulUserAddition />,
+      },
+      {
+        path: "users/failed-email-in-use",
+        element: <FailedEmailInUse />,
+      },
+      {
+        path: "failed-general",
+        element: <FailedGeneral />,
+      },
       { path: "activate-account", element: <ActivateAccount /> },
       { path: "successful-activation", element: <SuccessfulActivation /> },
       { path: "user-profile/:id", element: <UserProfile /> },
@@ -38,7 +53,10 @@ export const router = createBrowserRouter([
       { path: "belbin/results/:employeeId", element: <BelbinResults /> },
       { path: "belbin/dashboard", element: <BelbinDashboard /> },
       { path: "hr/belbin/expired", element: <ExpiredTestsView /> },
-      { path: "hr/belbin/results/:employeeId", element: <MangerBelbinPreview /> },
+      {
+        path: "hr/belbin/results/:employeeId",
+        element: <MangerBelbinPreview />,
+      },
       { path: "hr/belbin/dashboard", element: <HrBelbinDashboard /> },
     ],
   },

@@ -191,7 +191,7 @@ export default function AddNewUser() {
     try {
       const genderValue = gender.label as "Male" | "Female" | "Other";
 
-      let response = await createAccount({
+      let { response, status } = await createAccount({
         first_name: firstName,
         last_name: lastName,
         email: email,
@@ -216,9 +216,16 @@ export default function AddNewUser() {
         }),
       });
 
-      console.log("Account creation response:", response);
+      // Clear sessionStorage
+      sessionStorage.removeItem("addUserFormData");
 
-      // navigate("/");
+      if (status === 201) {
+        navigate("/users/successful-addition");
+      } else if (status === 409) {
+        navigate("/users/failed-email-in-use");
+      } else {
+        navigate("/failed-general");
+      }
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -235,8 +242,14 @@ export default function AddNewUser() {
       addr.postalCode,
       addr.city,
       `ul. ${addr.street} ${addr.houseNumber}`,
-    ];
-    return parts.join(", ");
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    if (addr.apartment) {
+      return parts + `/${addr.apartment}`;
+    }
+    return parts;
   };
 
   const handleAddressMouseDown = (e: React.MouseEvent) => {

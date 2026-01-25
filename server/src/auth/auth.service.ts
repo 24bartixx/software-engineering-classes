@@ -111,6 +111,13 @@ export class AuthService {
     }
   }
 
+  async emailExists(email: string): Promise<boolean> {
+    const user = await this.usersRepository.findOne({
+      where: { email, isactivated: true },
+    });
+    return !!user;
+  }
+
   async createAccount(
     createUserDto: CreateUserAuthDto,
     verificationToken: string,

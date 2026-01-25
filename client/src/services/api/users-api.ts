@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import type { UserProfile } from "../../types/user-profile";
 import type { Address } from "../../types/address";
 
@@ -40,12 +40,16 @@ export interface EditUserDto {
 }
 
 export const createAccount = async (data: CreateAccountDto) => {
-  console.log(`${API_BASE_URL}/auth/create-account`);
-  const response = await axios.post(
-    `${API_BASE_URL}/auth/create-account`,
-    data,
-  );
-  return response.data;
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/auth/create-account`,
+      data,
+    );
+    return { response: response.data, status: response.status };
+  } catch (err) {
+    const e = err as AxiosError<any>;
+    return { response: e.response?.data, status: e.response?.status };
+  }
 };
 
 export const verifyAccount = async (token: string, data: VerifyAccountDto) => {
