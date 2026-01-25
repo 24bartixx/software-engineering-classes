@@ -113,9 +113,32 @@ export class AuthService {
 
   async emailExists(email: string): Promise<boolean> {
     const user = await this.usersRepository.findOne({
+      where: { email },
+    });
+    return !!user;
+  }
+
+  async isActivated(email: string): Promise<boolean> {
+    const user = await this.usersRepository.findOne({
       where: { email, isactivated: true },
     });
     return !!user;
+  }
+
+  async findUserByEmail(email: string): Promise<User | null> {
+    return await this.usersRepository.findOne({
+      where: { email },
+    });
+  }
+
+  async deleteUserByEmail(email: string): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+    });
+
+    if (user) {
+      await this.usersRepository.remove(user);
+    }
   }
 
   async createAccount(

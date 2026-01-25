@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PageCard from "../../components/page-card";
 import CustomPassInput from "../../components/custom-pass-input";
 import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
-import { verifyAccount } from "../../services/api/users-api";
+import {
+  verifyAccount,
+  verifyActivateToken,
+} from "../../services/api/users-api";
 
 type FieldKey = "password" | "confirmPassword";
 
@@ -17,6 +20,33 @@ export default function ActivateAccount() {
   const [error, setError] = useState("");
   const [fieldError, setFieldError] = useState<FieldKey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingToken, setIsCheckingToken] = useState(true);
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = searchParams.get("token");
+      if (!token) {
+        navigate("/failed-activation");
+        return;
+      }
+
+      try {
+        const result = await verifyActivateToken(token);
+        console.log(result);
+        if (result.expired) {
+          navigate("/users/failed-expired-token");
+        } else if (!result.valid) {
+          navigate("/users/failed-invalid-token");
+        }
+      } catch (err) {
+        navigate("/users/failed-invalid-token");
+      } finally {
+        setIsCheckingToken(false);
+      }
+    };
+
+    checkToken();
+  }, [searchParams, navigate]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +103,17 @@ export default function ActivateAccount() {
       setIsSubmitting(false);
     }
   };
+
+  if (isCheckingToken) {
+    return (
+      <PageCard>
+        <div className="flex flex-col items-center justify-center w-full px-12 py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+          <p className="mt-4 text-gray-600">Verifying activation token...</p>
+        </div>
+      </PageCard>
+    );
+  }
 
   return (
     <PageCard>

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
@@ -26,10 +27,15 @@ export class AuthController {
     // Check if user with the same email already exists
     const emailExists = await this.authService.emailExists(email);
     if (emailExists) {
-      throw new HttpException(
-        'User with this email already exists',
-        HttpStatus.CONFLICT,
-      );
+      const isActivated = await this.authService.isActivated(email);
+      if (isActivated) {
+        throw new HttpException(
+          'User with this email already exists',
+          HttpStatus.CONFLICT,
+        );
+      } else {
+        await this.authService.deleteUserByEmail(email);
+      }
     }
 
     const token = jwt.sign({ email: email }, 'your-secret-key', {
@@ -49,7 +55,41 @@ export class AuthController {
     return { message: 'User created and activation email sent!' };
   }
 
-  @Post('verify-account')
+  @Get('verify-activate-token')
+  async verifyActivateToken(@Query('token') token: string) {
+    if (!token) {
+      throw new HttpException('Token is required', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const decoded = jwt.verify(token, 'your-secret-key') as { email: string };
+      return {
+        valid: true,
+        expired: false,
+      };
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return {
+          valid: false,
+          expired: true,
+        };
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return {
+          valid: false,
+          expired: false,
+        };
+      }
+
+      throw new HttpException(
+        'Token verification failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('activate-account')
   async verifyAndSetInitalPassword(
     @Query('token') token: string,
     @Body() verifyAccountDto: VerifyAccountDto,

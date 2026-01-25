@@ -54,8 +54,17 @@ export const createAccount = async (data: CreateAccountDto) => {
 
 export const verifyAccount = async (token: string, data: VerifyAccountDto) => {
   const response = await axios.post(
-    `${API_BASE_URL}/auth/verify-account?token=${token}`,
+    `${API_BASE_URL}/auth/activate-account?token=${token}`,
     data,
+  );
+  return response.data;
+};
+
+export const verifyActivateToken = async (
+  token: string,
+): Promise<{ valid: boolean; expired: boolean }> => {
+  const response = await axios.get(
+    `${API_BASE_URL}/auth/verify-activate-token?token=${token}`,
   );
   return response.data;
 };

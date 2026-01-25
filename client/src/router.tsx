@@ -20,6 +20,8 @@ import HrBelbinDashboard from "./pages/belbin/hr-belbin-dashboard";
 import SuccessfulUserAddition from "./pages/users/successful-user-addition";
 import FailedEmailInUse from "./pages/users/failed-email-in-use";
 import FailedGeneral from "./pages/failed-general";
+import FailedExpiredToken from "./pages/users/failed-expired-token";
+import FailedInvalidToken from "./pages/users/failed-invalid-token";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +47,14 @@ export const router = createBrowserRouter([
       },
       { path: "activate-account", element: <ActivateAccount /> },
       { path: "successful-activation", element: <SuccessfulActivation /> },
+      {
+        path: "users/failed-expired-token",
+        element: <FailedExpiredToken />,
+      },
+      {
+        path: "users/failed-invalid-token",
+        element: <FailedInvalidToken />,
+      },
       { path: "user-profile/:id", element: <UserProfile /> },
       { path: "failed-activation", element: <FailedActivation /> },
       { path: "projects", element: <Projects /> },

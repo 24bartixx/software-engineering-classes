@@ -22,7 +22,7 @@ export default function Info({ title, icon = "😊" }: InfoProps) {
         onClick={() => navigate("/")}
         className="mt-6 w-full max-w-xl h-11 rounded-xl bg-black text-white hover:opacity-90 active:scale-[0.99] transition"
       >
-        Continue
+        Home
       </button>
     </PageCard>
   );
