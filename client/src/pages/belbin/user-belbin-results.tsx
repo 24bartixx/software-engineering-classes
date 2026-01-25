@@ -1,20 +1,33 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import PageCard from '../../components/page-card';
 import BelbinReportBody from '../../components/belbin-results-body';
-import {useEffect, useState } from "react";
+import {useEffect, useRef, useState } from "react";
 import type { EmployeeBelbinResult } from "../../types/belbin";
 import {getTestResults} from "../../services/api/belbin-api";
 import PageLoader from "../../components/page-loader";
 import ErrorState from "../../components/error-state";
 import BackButton from "../../components/back-button";
+import { useToast } from "../../hooks/use-toast";
+import ToastNotification from "../../components/toast-notification";
 
 export default function UserBelbinResults() {
     const { employeeId } = useParams<{ employeeId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { notifications, addNotification, removeNotification } = useToast();
 
     const [data, setData] = useState<EmployeeBelbinResult | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const toastShownRef = useRef(false);
+    useEffect(() => {
+        if (location.state?.testCompleted && !toastShownRef.current) {
+            addNotification('success', 'Twój test został zapisany pomyślnie.');
+            toastShownRef.current = true;
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -53,6 +66,7 @@ export default function UserBelbinResults() {
 
     return (
         <div className="min-h-screen bg-[#e9f0f6] flex justify-center items-start py-8 font-sans">
+            <ToastNotification notifications={notifications} removeNotification={removeNotification} />
             <div className="w-full max-w-3xl">
                 <PageCard>
                     <div className="p-6">
