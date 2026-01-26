@@ -1,0 +1,42 @@
+sequenceDiagram
+    actor User as Administrator
+    participant FE as Frontend
+    participant BE as Backend
+
+    Note over User, BE: Krok 1: Wypełnienie i zatwierdzenie formularza
+
+    User->>FE: Otworzenie formularza dodawania użytkownika
+    FE->>User: Wyświetlenie formularza
+
+    loop Until poprawna walidacja
+        loop dowolna ilość razy
+            User->>FE: Edycja danych w formularzu
+            FE->>User: Wyświetlenie formularza ze zmianami
+        end
+        
+        User->>FE: Zaakceptowanie formularza
+        FE->>FE: Lokalna walidacja danych
+
+        alt Walidacja OK
+            Note right of FE: Wyjście z pętli
+        else Walidacja błędna
+            FE-->>User: Wyświetlenie błędów walidacji
+        end
+    end
+
+    Note over User, BE: Krok 2: Wysłanie danych
+
+    FE->>BE: POST /auth/create-account  (dane użytkownika)
+
+    alt Sukces
+        BE->>FE: 201 Created (konto utworzone, link wysłany)
+        FE->>User: Wyświetlenie informacji o wysłanym linku aktywacyjnym
+
+    else Błąd - Zajęty email
+        BE->>FE: 409 Confict (zajęty email)
+        FE-->User: Wyświetlenie informacji, że podany mail jest przypisany do innego konta
+    else Inny błąd
+        BE->>FE: 500 Internal Server Error / 503 Service Unavailable
+        FE-->User: Wyświetlenie informacji, że operacja się nie powiodła
+    end
+
