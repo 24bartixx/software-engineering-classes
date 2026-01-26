@@ -1,0 +1,62 @@
+sequenceDiagram
+    participant MS as Mail Service
+    actor User as Użytkownik
+    participant FE as Frontend
+    participant BE as Backend
+
+    Note over MS, BE: Krok 1: Kliknięcie w link aktywacyjny
+
+    User->>MS: Kliknięcie maila aktywacyjnego
+    MS->>FE: Otworzenie aplikacji
+
+    Note over User, BE: Krok 2: Weryfikacja linku aktywacyjnego
+
+    FE->>BE: POST /auth/verify-activate-token  (token)
+
+    alt Błąd - Nieprawidłowy token
+        BE-->>FE: 200 OK (nieprawidłowy token)
+        FE->>User: Wyświetlenie informacji o nieprawidłowym linku aktywacyjnym
+
+    else Błąd - Przeterminowany token
+        BE-->>FE: 200 Ok (przeterminowany token)
+        FE->>User: Wyświetlenie informacji o przeterminowanym linku aktywacyjnym
+
+    else Błąd
+        BE-->>FE: 400 Bad Request / 500 Internal Server Error
+        FE->>User: Wyświetlenie informacji, że coś poszło nie tak
+
+    else Prawidłowy i ważny token
+        BE-->>FE: 200 Ok (przeterminowany token)
+        FE->>User: Wyświetlenie formularza do ustawienia hasła
+
+        Note over User, BE: Krok 3: Ustawienie hasła
+
+        loop Until poprawna walidacja
+            loop dowolna ilość razy
+                User->>FE: Edycja formularza
+                FE->>User: Wyświetlenie formularza ze zmianami
+            end
+            
+            User->>FE: Zaakceptowanie formularza
+            FE->>FE: Lokalna walidacja danych
+
+            alt Walidacja OK
+                Note right of FE: Wyjście z pętli
+            else Walidacja błędna
+                FE-->>User: Wyświetlenie błędów walidacji
+            end
+        end
+
+        Note over User, BE: Krok 4: Wysłanie formularza z hasłem
+
+        FE->>BE: POST /auth/activate-account  (hasło)
+
+        alt Sukces
+            BE->>FE: 200 Ok 
+            FE->>User: Wyświetlenie informacji o pomyślnej aktywacji
+
+        else Błąd
+            BE->>FE: 400 Bad Request / 500 Internal Server Error
+            FE-->User: Wyświetlenie informacji, że coś poszło nie tak
+        end
+    end
