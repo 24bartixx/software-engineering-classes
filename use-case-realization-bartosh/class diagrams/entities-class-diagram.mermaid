@@ -1,0 +1,102 @@
+classDiagram
+    %% --- ENTITIES LAYER ---
+        class User {
+            +user_id: number
+            +first_name: string
+            +last_name: string
+            +email: string
+            +password: string
+            +gender: Gender
+            +phone_number: string
+            +birthday_date: Date
+            +isactivated: boolean
+            +verification_token?: string
+            +created_at: Date
+            +modified_at: Date
+            +address_id?: number
+            +address?: Address
+        }
+
+        class Employee {
+            +id: number
+            +employedAt: Date
+            +firedAt?: Date
+            +user: User
+            +belbinTest: BelbinTest
+            +departmentsHistory: EmployeeDepartment[]
+            +branchesHistory: EmployeeBranch[]
+        }
+
+        class HrEmployee {
+            +id: number
+            +employee: Employee
+        }
+
+        class ProjectManager {
+            +project_manager_id: number
+            +employee_id: number
+            +employee: Employee
+        }
+
+        class Administrator {
+            +administrator_id: number
+            +hr_employee_id: number
+            +hrEmployee: HrEmployee
+            +project_manager_id: number
+            +projectManager: ProjectManager
+        }
+
+        class EmployeeDepartment {
+            +employeeId: number
+            +departmentId: number
+            +startedAt: Date
+            +stoppedAt?: Date
+            +employee: Employee
+            +department: Department
+        }
+
+        class EmployeeBranch {
+            +employeeId: number
+            +branchId: number
+            +startedAt: Date
+            +stoppedAt?: Date
+            +employee: Employee
+            +branch: Branch
+        }
+
+        class Department {
+            +id: number
+            +name: string
+            +employeeDepartments: EmployeeDepartment[]
+        }
+
+        class Branch {
+            +branch_id: number
+            +is_hq: boolean
+            +address: Address
+            +employeeBranches: EmployeeBranch[]
+        }
+
+        class Address {
+            +address_id: number
+            +country: string
+            +state?: string
+            +postal_code: string
+            +city: string
+            +street: string
+            +number: string
+            +apartment?: string
+        }
+
+    %% --- ENTITY RELATIONS ---
+        User "1" -- "0..1" Address : has
+        Employee "1" -- "1" User : corresponds to
+        Employee "1" -- "*" EmployeeDepartment : has
+        Employee "1" -- "*" EmployeeBranch : has
+        HrEmployee "1" -- "1" Employee : extends
+        ProjectManager "1" -- "1" Employee : extends
+        Administrator "1" -- "1" HrEmployee : has
+        Administrator "1" -- "1" ProjectManager : has
+        Department "1" -- "*" EmployeeDepartment : has
+        Branch "1" -- "*" EmployeeBranch : has
+        Branch "1" -- "1" Address : has

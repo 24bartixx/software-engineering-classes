@@ -1,0 +1,123 @@
+classDiagram
+%% --- CONTROLLER LAYER ---
+    class AuthController {
+        -emailService: EmailService
+        -authService: AuthService
+        +createAccount(createUserDto: CreateUserAuthDto)
+        +verifyActivateToken(token: string)
+        +verifyAndSetInitalPassword(token: string, verifyAccountDto: VerifyAccountDto)
+    }
+
+%% --- SERVICE LAYER ---
+
+    AuthController ..> AuthService : uses
+    class AuthService {
+        -usersRepository: UsersRepository
+        -employeeRepository: EmployeeRepository
+        -hrEmployeeRepository: HrEmployeeRepository
+        -projectManagerRepository: ProjectManagerRepository
+        -administratorRepository: AdministratorRepository
+        -employeeDepartmentRepository: EmployeeDepartmentRepository
+        -employeeBranchRepository: EmployeeBranchRepository
+        -addressesService: AddressesService
+
+        -createRoleRecords(userId: number, systemRole: SystemRole, departmentIds?: number[], branchIds?: number[]) Promise<void>
+        +emailExists(email: string) Promise<boolean>
+        +isActivated(email: string) Promise<boolean>
+        +findUserByEmail(email: string) Promise<User | null>
+        +deleteUserByEmail(email: string) Promise<void>
+        +createAccount(createUserDto: CreateUserAuthDto, verificationToken: string) Promise<User>
+        +verifyAccount(verifyAccountDto: VerifyAccountDto, email: string) Promise<void>
+        }
+
+%% --- REPOSITORY LAYER ---
+
+    AuthService ..> UsersRepository : uses
+    class UsersRepository {
+        +findOne(options: any) Promise<User | null>
+        +create(userData: Partial<User>) User
+        +save(user: User) Promise<User>
+        +remove(user: User) Promise<void>
+    }
+
+    AuthService ..> EmployeeRepository : uses
+    class EmployeeRepository {
+        +create(employeeData: Partial<Employee>) Employee
+        +save(employee: Employee) Promise<Employee>
+    }
+
+    AuthService ..> HrEmployeeRepository : uses
+    class HrEmployeeRepository {
+        +create(hrEmployeeData: Partial<HrEmployee>) HrEmployee
+        +save(hrEmployee: HrEmployee) Promise<HrEmployee>
+    }
+
+    AuthService ..> ProjectManagerRepository : uses
+    class ProjectManagerRepository {
+        +create(projectManagerData: Partial<ProjectManager>) ProjectManager
+        +save(projectManager: ProjectManager) Promise<ProjectManager>
+    }
+
+    AuthService ..> AdministratorRepository : uses
+    class AdministratorRepository {
+        +create(administratorData: Partial<Administrator>) Administrator
+        +save(administrator: Administrator) Promise<Administrator>
+    }
+
+    AuthService ..> EmployeeDepartmentRepository : uses
+    class EmployeeDepartmentRepository {
+        +create(departmentData: Partial<EmployeeDepartment>) EmployeeDepartment
+        +save(departments: EmployeeDepartment[]) Promise<EmployeeDepartment[]>
+    }
+
+    AuthService ..> EmployeeBranchRepository : uses
+    class EmployeeBranchRepository {
+        +create(branchData: Partial<EmployeeBranch>) EmployeeBranch
+        +save(branches: EmployeeBranch[]) Promise<EmployeeBranch[]>
+    }
+
+%% --- DTOS LAYER ---
+    AuthController ..> CreateUserAuthDto : uses
+    AuthController ..> VerifyAccountDto : uses
+    AuthController ..> EditUserAuthDto : uses
+    AuthService ..> CreateUserAuthDto : uses
+    AuthService ..> VerifyAccountDto : uses
+    AuthService ..> EditUserAuthDto : uses
+    
+    class CreateUserAuthDto {
+        +first_name: string
+        +last_name: string
+        +email: string
+        +gender: Gender
+        +phone_number: string
+        +birthday_date: string
+        +country?: string
+        +state?: string
+        +postal_code?: string
+        +city?: string
+        +system_role: SystemRole
+        +street?: string
+        +number?: string
+        +apartment?: string
+        +department_ids?: number[]
+        +branch_ids?: number[]
+        }
+
+    class EditUserAuthDto {
+        +first_name: string
+        +last_name: string
+        +email: string
+        +gender: Gender
+        +phone_number: string
+        +birthday_date: string
+        +department_ids?: number[]
+        +branch_ids?: number[]
+        }
+
+    class VerifyAccountDto {
+        +password: string
+        +repeat_password: string
+        }
+
+
+   

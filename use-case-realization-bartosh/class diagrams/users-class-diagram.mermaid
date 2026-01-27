@@ -1,0 +1,183 @@
+classDiagram
+%% --- CONTROLLER LAYER ---
+    class UsersController {
+        -usersService: UsersService
+        +create(createUserDto: CreateUserDto)
+        +findAll()
+        +findOne(id: string)
+        +getUserProfile(id: string) Promise<UserProfileDto>
+        +update(id: string, updateUserDto: UpdateUserDto)
+        +remove(id: string)
+        +editUser(id: number, editUserDto: EditUserDto)
+        +getAddress(id: number)
+        +removeAddress(id: number)
+        +createAddress(id: number, createUserAddressDto: CreateUserAddressDto)
+    }
+
+%% --- SERVICE LAYER ---
+
+    UsersController ..> UsersService : uses
+    class UsersService {
+        -usersRepository: UsersRepository
+        -employeeRepository: EmployeeRepository
+        -hrEmployeeRepository: HrEmployeeRepository
+        -projectManagerRepository: ProjectManagerRepository
+        -administratorRepository: AdministratorRepository
+        -employeeDepartmentRepository: EmployeeDepartmentRepository
+        -employeeBranchRepository: EmployeeBranchRepository
+        -addressRepository: AddressRepository
+
+        +create(createUserDto: CreateUserDto) Promise<User>
+        +findAll() Promise<User[]>
+        +findOne(id: number) Promise<User>
+        +update(id: number, updateUserDto: UpdateUserDto) Promise<User>
+        +remove(id: number) Promise<void>
+        +getUserProfile(id: number) Promise<UserProfileDto>
+        +editUser(userId: number, editUserDto: EditUserDto) Promise<User>
+        +getAddress(userId: number) Promise<Address | null>
+        +removeAddress(userId: number) Promise<void>
+        +createAddress(userId: number, createUserAddressDto: CreateUserAddressDto) Promise<Address>
+        }
+
+%% --- REPOSITORY LAYER ---
+
+    UsersService ..> UsersRepository : uses
+    class UsersRepository {
+        +findOne(options: any) Promise<User | null>
+        +findOneBy(options: any) Promise<User | null>
+        +find(options?: any) Promise<User[]>
+        +create(userData: Partial<User>) User
+        +save(user: User) Promise<User>
+        +update(id: number, userData: Partial<User>) Promise<void>
+        +delete(id: number) Promise<void>
+    }
+
+    UsersService ..> EmployeeRepository : uses
+    class EmployeeRepository {
+        +findOne(options: any) Promise<Employee | null>
+        +create(employeeData: Partial<Employee>) Employee
+        +save(employee: Employee) Promise<Employee>
+    }
+
+    UsersService ..> HrEmployeeRepository : uses
+    class HrEmployeeRepository {
+        +findOne(options: any) Promise<HrEmployee | null>
+        +create(hrEmployeeData: Partial<HrEmployee>) HrEmployee
+        +save(hrEmployee: HrEmployee) Promise<HrEmployee>
+    }
+
+    UsersService ..> ProjectManagerRepository : uses
+    class ProjectManagerRepository {
+        +findOne(options: any) Promise<ProjectManager | null>
+        +create(projectManagerData: Partial<ProjectManager>) ProjectManager
+        +save(projectManager: ProjectManager) Promise<ProjectManager>
+    }
+
+    UsersService ..> AdministratorRepository : uses
+    class AdministratorRepository {
+        +findOne(options: any) Promise<Administrator | null>
+        +create(administratorData: Partial<Administrator>) Administrator
+        +save(administrator: Administrator) Promise<Administrator>
+    }
+
+    UsersService ..> EmployeeDepartmentRepository : uses
+    class EmployeeDepartmentRepository {
+        +find(options: any) Promise<EmployeeDepartment[]>
+        +create(departmentData: Partial<EmployeeDepartment>) EmployeeDepartment
+        +save(departments: EmployeeDepartment[]) Promise<EmployeeDepartment[]>
+        +delete(options: any) Promise<void>
+    }
+
+    UsersService ..> EmployeeBranchRepository : uses
+    class EmployeeBranchRepository {
+        +find(options: any) Promise<EmployeeBranch[]>
+        +create(branchData: Partial<EmployeeBranch>) EmployeeBranch
+        +save(branches: EmployeeBranch[]) Promise<EmployeeBranch[]>
+        +delete(options: any) Promise<void>
+    }
+
+    UsersService ..> AddressRepository : uses
+    class AddressRepository {
+        +create(addressData: Partial<Address>) Address
+        +save(address: Address) Promise<Address>
+        +delete(id: number) Promise<void>
+    }
+
+%% --- DTOS LAYER ---
+    UsersController ..> CreateUserDto : uses
+    UsersController ..> UpdateUserDto : uses
+    UsersController ..> UserProfileDto : uses
+    UsersController ..> EditUserDto : uses
+    UsersController ..> CreateUserAddressDto : uses
+    UsersService ..> CreateUserDto : uses
+    UsersService ..> UpdateUserDto : uses
+    UsersService ..> UserProfileDto : uses
+    UsersService ..> EditUserDto : uses
+    UsersService ..> CreateUserAddressDto : uses
+    
+    class CreateUserDto {
+        +first_name: string
+        +last_name: string
+        +email: string
+        +password: string
+        +gender: Gender
+        +phone_number: string
+        +birthday_date: string
+        +address_id?: number
+    }
+
+    class UpdateUserDto {
+        +first_name?: string
+        +last_name?: string
+        +email?: string
+        +password?: string
+        +gender?: Gender
+        +phone_number?: string
+        +birthday_date?: string
+        +address_id?: number
+    }
+
+    class EditUserDto {
+        +first_name: string
+        +last_name: string
+        +email: string
+        +gender: Gender
+        +phone_number: string
+        +birthday_date: string
+        +department_ids?: number[]
+        +branch_ids?: number[]
+    }
+
+    class UserProfileDto {
+        +userId: number
+        +firstName: string
+        +lastName: string
+        +email: string
+        +phoneNumber: string
+        +gender: string
+        +birthYear: number
+        +birthMonth: number
+        +birthDay: number
+        +addressCountry: string
+        +addressState: string
+        +addressPostalCode: string
+        +addressCity: string
+        +addressStreet: string
+        +addressNumber: string
+        +addressApartment: string
+        +employeeSince: string
+        +lastModification: string
+        +branches: string[]
+        +departments: string[]
+        +systemRole: string
+    }
+
+    class CreateUserAddressDto {
+        +country: string
+        +state?: string
+        +postal_code: string
+        +city: string
+        +street: string
+        +number: string
+        +apartment?: string
+    }
